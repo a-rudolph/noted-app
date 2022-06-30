@@ -1,17 +1,36 @@
 import type { NextPage } from "next";
 import Head from "next/head";
 import { trpc } from "../utils/trpc";
+import { useMemo, useState } from "react";
 
 const Home: NextPage = () => {
+  const [disabled, setDisabled] = useState(false);
+
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+
   const utils = trpc.useContext();
 
-  const { data } = trpc.useQuery(["example.getAll"]);
+  const { data, isLoading } = trpc.useQuery(["example.getAll"]);
 
-  const { mutate } = trpc.useMutation(["example.addNote"], {
-    onSuccess: () => {
-      utils.invalidateQueries(["example.getAll"]);
-    },
-  });
+  const { mutate, isLoading: isSubmitting } = trpc.useMutation(
+    ["example.addNote"],
+    {
+      onSuccess: () => {
+        utils.invalidateQueries(["example.getAll"]);
+        setDisabled(true);
+      },
+    }
+  );
+
+  const reversedNotes = useMemo(() => {
+    // copy notes array
+    if (!data) return [];
+
+    const notes = [...data.notes];
+
+    return notes.reverse();
+  }, [data]);
 
   return (
     <>
@@ -26,26 +45,52 @@ const Home: NextPage = () => {
         </h1>
 
         <div className="w-fit mt-6">
-          <button
-            onClick={() => {
-              mutate({ name: "New Note", content: "New Content" });
-            }}
-          >
-            Add Note
-          </button>
+          {/* title input */}
+          <div className="flex flex-col items-center justify-center">
+            <label className="text-gray-700 text-sm">Title</label>
+            <input
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full p-2 border-2 border-gray-300 rounded-lg"
+              type="text"
+              placeholder="Enter your name"
+            />
+          </div>
+          {/* content input */}
+          <div className="flex flex-col items-center justify-center mt-6">
+            <label className="text-gray-700 text-sm">Content</label>
+            <textarea
+              onChange={(e) => setContent(e.target.value)}
+              className="w-full p-2 border-2 border-gray-300 rounded-lg"
+              placeholder="Enter your content"
+            />
+          </div>
+          <div className="flex flex-col items-end mt-2 w-full">
+            <button
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              disabled={isSubmitting || isLoading || disabled}
+              onClick={() => {
+                mutate({
+                  name: title,
+                  content,
+                });
+              }}
+            >
+              Add Note
+            </button>
+          </div>
           <div className="py-6 text-2xl">
-            {data && (
-              <p>
-                {data.notes.map((note) => {
-                  return (
-                    <div className="mb-6" key={note.id}>
-                      <div>{note.name}</div>
-                      <div>{note.content}</div>
-                    </div>
-                  );
-                })}
-              </p>
-            )}
+            <p>
+              {isLoading && <div className="mb-6">...loading</div>}
+              {isSubmitting && <div className="mb-6">submitting...</div>}
+              {reversedNotes.map((note) => {
+                return (
+                  <div className="mb-6" key={note.id}>
+                    <div>{note.name}</div>
+                    <div>{note.content}</div>
+                  </div>
+                );
+              })}
+            </p>
           </div>
         </div>
       </div>
