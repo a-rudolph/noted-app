@@ -2,11 +2,9 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import { trpc } from "../utils/trpc";
 import { useMemo, useState } from "react";
-import { TRPCClientError } from "@trpc/client";
-import { AppRouter } from "../server/router";
 
 const Home: NextPage = () => {
-  const [disabled, setDisabled] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -20,7 +18,7 @@ const Home: NextPage = () => {
     {
       onSuccess: () => {
         utils.invalidateQueries(["example.getAll"]);
-        setDisabled(true);
+        setHasSubmitted(true);
         setTitle("");
         setContent("");
       },
@@ -73,10 +71,16 @@ const Home: NextPage = () => {
               maxLength={200}
             />
           </FormField>
-          <div className="flex flex-col items-end mt-2 w-full">
+          <div className="flex justify-between mt-2 w-full">
+            <div>
+              {/* show thank you for submitting */}
+              {hasSubmitted && (
+                <div className="text-center text-blue-700">Noted!</div>
+              )}
+            </div>
             <button
               className="bg-blue-500 enabled:hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={isSubmitting || isLoading || disabled}
+              disabled={isSubmitting || isLoading || hasSubmitted}
               onClick={() => {
                 mutate({
                   name: title,
@@ -89,8 +93,8 @@ const Home: NextPage = () => {
           </div>
           <div className="py-6">
             <div>
-              {isLoading && <div className="mb-6">...loading</div>}
-              {isSubmitting && <div className="mb-6">submitting...</div>}
+              {!data && isLoading && <div className="mb-6">...loading</div>}
+              {!data && !isLoading && <div className="mb-6">no notes!</div>}
               {reversedNotes.map((note) => {
                 return (
                   <div className="mb-6" key={note.id}>
