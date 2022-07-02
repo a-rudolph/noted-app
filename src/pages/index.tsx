@@ -48,7 +48,6 @@ const Home: NextPage = () => {
         <h1 className="font-extrabold mt-4 text-center text-7xl px-3">
           <span className="text-blue-500">Noted</span> App
         </h1>
-
         <div className="w-screen max-w-xl p-6">
           <FormField label="Title">
             <input
@@ -95,7 +94,6 @@ const Home: NextPage = () => {
                 <div className="mb-6">no notes!</div>
               )}
               {reversedNotes.map((note) => {
-                console.log(note);
                 return (
                   <div className="mb-6" key={note.id}>
                     <div className="flex justify-between items-baseline">
