@@ -4,7 +4,9 @@ import { z } from "zod";
 export const exampleRouter = createRouter()
   .query("getAll", {
     async resolve({ ctx }) {
-      return { notes: await ctx.prisma.note.findMany() };
+      const notes = await ctx.prisma.note.findMany();
+
+      return { notes };
     },
   })
   .mutation("addNote", {

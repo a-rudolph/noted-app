@@ -45,12 +45,11 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className="flex flex-col items-center justify-center min-h-screen">
-        <h1 className="font-extrabold mt-4 text-center text-7xl">
+        <h1 className="font-extrabold mt-4 text-center text-7xl px-3">
           <span className="text-blue-500">Noted</span> App
         </h1>
 
         <div className="w-screen max-w-xl p-6">
-          {/* title input */}
           <FormField label="Title">
             <input
               onChange={(e) => setTitle(e.target.value)}
@@ -61,7 +60,6 @@ const Home: NextPage = () => {
               placeholder="Enter a title"
             />
           </FormField>
-          {/* content input */}
           <FormField label="Content">
             <textarea
               value={content}
@@ -73,7 +71,6 @@ const Home: NextPage = () => {
           </FormField>
           <div className="flex justify-between mt-2 w-full">
             <div>
-              {/* show thank you for submitting */}
               {hasSubmitted && (
                 <div className="text-center text-blue-700">Noted!</div>
               )}
@@ -94,13 +91,21 @@ const Home: NextPage = () => {
           <div className="py-6">
             <div>
               {!data && isLoading && <div className="mb-6">...loading</div>}
-              {!data && !isLoading && <div className="mb-6">no notes!</div>}
+              {Boolean(!data?.notes.length) && !isLoading && (
+                <div className="mb-6">no notes!</div>
+              )}
               {reversedNotes.map((note) => {
+                console.log(note);
                 return (
                   <div className="mb-6" key={note.id}>
-                    <div className="text-2xl">{note.name}</div>
-                    <p>{note.content}</p>
+                    <div className="flex justify-between items-baseline">
+                      <div className="text-2xl">{note.name}</div>
+                      <div className="text-gray-500">
+                        {new Date(note.createdAt).toLocaleString()}
+                      </div>
+                    </div>
                     <hr className="border-gray-300" />
+                    <p className="py-2">{note.content}</p>
                   </div>
                 );
               })}

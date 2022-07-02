@@ -17,6 +17,7 @@ model Note {
 
     name String
     content String
+    createdAt DateTime @default(now())
 }
 
 // Neccessary for Next auth
