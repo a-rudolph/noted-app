@@ -12,6 +12,7 @@ const load = async () => {
 
     const notes = Array.from({ length: 10 }).map((_, i) => ({
       name: `Note ${i}`,
+      title: `Note ${i}`,
       content: `This is note ${i}`,
       createdAt: new Date(new Date().setMinutes(i * 17)),
     }));

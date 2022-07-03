@@ -16,7 +16,10 @@ export const exampleRouter = createRouter()
     }),
     async resolve({ ctx, input }) {
       return await ctx.prisma.note.create({
-        data: input,
+        data: {
+          ...input,
+          title: input.name,
+        },
       });
     },
   });
