@@ -1,10 +1,11 @@
 import type { NextPage } from "next";
 import Head from "next/head";
 import { trpc } from "../utils/trpc";
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 
 const Home: NextPage = () => {
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -19,6 +20,7 @@ const Home: NextPage = () => {
       onSuccess: () => {
         utils.invalidateQueries(["example.getAll"]);
         setHasSubmitted(true);
+        setIsValidating(false);
         setTitle("");
         setContent("");
       },
@@ -58,6 +60,13 @@ const Home: NextPage = () => {
               maxLength={20}
               placeholder="Enter a title"
             />
+            {title.length < 4 && isValidating && (
+              <div className="text-red-500">
+                <span className="text-sm">
+                  Title must be at least 4 characters
+                </span>
+              </div>
+            )}
           </FormField>
           <FormField label="Content">
             <textarea
@@ -67,6 +76,21 @@ const Home: NextPage = () => {
               placeholder="Enter your content"
               maxLength={200}
             />
+            {content.length < 10 && isValidating && (
+              <div className="text-red-500">
+                <span className="text-sm">
+                  Content must be at least 10 characters
+                </span>
+              </div>
+            )}
+            {/* warn if content is over 200 chars */}
+            {content.length > 150 && (
+              <div className="text-orange-500">
+                <span className="text-sm">
+                  {200 - content.length}/200 characters remaining
+                </span>
+              </div>
+            )}
           </FormField>
           <div className="flex justify-between mt-2 w-full">
             <div>
@@ -78,6 +102,7 @@ const Home: NextPage = () => {
               className="bg-blue-500 enabled:hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isSubmitting || isLoading || hasSubmitted}
               onClick={() => {
+                setIsValidating(true);
                 mutate({
                   title,
                   content,
@@ -90,7 +115,7 @@ const Home: NextPage = () => {
           <div className="py-6">
             <div>
               {!data && isLoading && <div className="mb-6">...loading</div>}
-              {Boolean(!data?.notes.length) && !isLoading && (
+              {Boolean(!reversedNotes.length) && !isLoading && (
                 <div className="mb-6">no notes!</div>
               )}
               {reversedNotes.map((note) => {
