@@ -79,7 +79,7 @@ const Home: NextPage = () => {
               disabled={isSubmitting || isLoading || hasSubmitted}
               onClick={() => {
                 mutate({
-                  name: title,
+                  title,
                   content,
                 });
               }}
@@ -97,7 +97,7 @@ const Home: NextPage = () => {
                 return (
                   <div className="mb-6" key={note.id}>
                     <div className="flex justify-between items-baseline">
-                      <div className="text-2xl">{note.name}</div>
+                      <div className="text-2xl">{note.title}</div>
                       <div className="text-gray-500">
                         {new Date(note.createdAt).toLocaleString()}
                       </div>

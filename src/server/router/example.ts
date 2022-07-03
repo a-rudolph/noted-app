@@ -11,15 +11,12 @@ export const exampleRouter = createRouter()
   })
   .mutation("addNote", {
     input: z.object({
-      name: z.string().min(4).max(20),
+      title: z.string().min(4).max(20),
       content: z.string().min(10).max(200),
     }),
     async resolve({ ctx, input }) {
       return await ctx.prisma.note.create({
-        data: {
-          ...input,
-          title: input.name,
-        },
+        data: input,
       });
     },
   });

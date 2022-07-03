@@ -11,8 +11,7 @@ datasource db {
 
 model Note {
   id        String   @id @default(cuid())
-  name      String
-  title     String?
+  title     String
   content   String
   createdAt DateTime @default(now())
 }
