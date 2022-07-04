@@ -13,13 +13,13 @@ const Home: NextPage = () => {
 
   const utils = trpc.useContext();
 
-  const { data, isLoading } = trpc.useQuery(["example.getAll"]);
+  const { data, isLoading } = trpc.useQuery(["note.getAll"]);
 
   const { mutate, isLoading: isSubmitting } = trpc.useMutation(
-    ["example.addNote"],
+    ["note.addNote"],
     {
       onSuccess: () => {
-        utils.invalidateQueries(["example.getAll"]);
+        utils.invalidateQueries(["note.getAll"]);
         setHasSubmitted(true);
         setIsValidating(false);
         setTitle("");
