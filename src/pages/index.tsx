@@ -48,39 +48,50 @@ const Home: NextPage = () => {
     return notes.reverse();
   }, [data]);
 
-  const contentExtra = useMemo(() => {
+  const contentProps = useMemo(() => {
     if (content.includes("\n")) {
-      return (
-        <div className="text-orange-500">
-          <span className="text-sm">
-            (new lines will be converted to spaces)
-          </span>
-        </div>
-      );
+      return {
+        status: "border-warning",
+        extra: (
+          <div className="text-warning">
+            <span className="text-sm">
+              (new lines will be converted to spaces)
+            </span>
+          </div>
+        ),
+      };
     }
 
     if (content.length < 10 && isValidating) {
-      return (
-        <div className="text-red-500">
-          <span className="text-sm">
-            Content must be at least 10 characters
-          </span>
-        </div>
-      );
+      return {
+        status: "border-error",
+        extra: (
+          <div className="text-error">
+            <span className="text-sm">
+              Content must be at least 10 characters
+            </span>
+          </div>
+        ),
+      };
     }
 
     if (content.length > 150) {
-      return (
-        <div className="text-orange-500">
-          <span className="text-sm">
-            {180 - content.length}/180 characters remaining
-          </span>
-        </div>
-      );
+      return {
+        status: "border-warning",
+        extra: (
+          <div className="text-warning">
+            <span className="text-sm">
+              {180 - content.length}/180 characters remaining
+            </span>
+          </div>
+        ),
+      };
     }
 
-    return null;
+    return {};
   }, [content, isValidating]);
+
+  const titleError = title.length < 4 && isValidating;
 
   return (
     <>
@@ -91,15 +102,14 @@ const Home: NextPage = () => {
       </Head>
       <div className="flex flex-col items-center justify-center min-h-screen">
         <h1 className="font-extrabold mt-4 text-center text-7xl px-3">
-          <span className="text-blue-500">Noted</span> App
+          <span className="text-primary">Noted</span> App
         </h1>
         <div className="w-screen max-w-xl p-6">
           <FormField
             label="Title"
             extra={
-              title.length < 4 &&
-              isValidating && (
-                <span className="text-red-500">
+              titleError && (
+                <span className="text-error">
                   Title must be at least 4 characters
                 </span>
               )
@@ -107,25 +117,29 @@ const Home: NextPage = () => {
           >
             <input
               onChange={(e) => setTitle(e.target.value)}
-              className="input input-bordered"
+              className={`input input-bordered ${
+                titleError ? "border-error" : ""
+              }`}
               type="text"
               value={title}
               maxLength={20}
               placeholder="Enter a title"
             />
           </FormField>
-          <FormField label="Content" extra={contentExtra}>
+          <FormField label="Content" extra={contentProps.extra}>
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="input input-bordered h-[160px] resize-none"
+              className={`input input-bordered ${contentProps.status} h-[160px] resize-none`}
               placeholder="Enter your content"
               maxLength={180}
             />
           </FormField>
           <div className="flex justify-end w-full">
             <button
-              className={`btn btn-primary ${contentExtra ? "mt-[-20px]" : ""}`}
+              className={`btn btn-primary ${
+                contentProps.extra ? "mt-[-20px]" : ""
+              }`}
               disabled={isSubmitting || isLoading || hasSubmitted}
               onClick={() => {
                 setIsValidating(true);
@@ -136,7 +150,7 @@ const Home: NextPage = () => {
               }}
             >
               {hasSubmitted ? (
-                <div className="text-center text-blue-700">Noted!</div>
+                <div className="text-center text-primary">Noted!</div>
               ) : (
                 <div className="text-center">Add Note</div>
               )}
