@@ -1,7 +1,8 @@
-import type { NextPage } from "next";
+import type { CSSProperties } from "react";
 import Head from "next/head";
+import type { NextPage } from "next";
 import { trpc } from "../utils/trpc";
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 const Home: NextPage = () => {
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -29,6 +30,14 @@ const Home: NextPage = () => {
       },
     }
   );
+
+  const needsBreakWord = (content: string) => {
+    return !content.includes(" ");
+  };
+
+  const breakWordStyle = (content: string): CSSProperties => {
+    return needsBreakWord(content) ? { wordBreak: "break-word" } : {};
+  };
 
   const reversedNotes = useMemo(() => {
     // copy notes array
@@ -74,7 +83,7 @@ const Home: NextPage = () => {
               onChange={(e) => setContent(e.target.value)}
               className="w-full p-2 border-2 border-gray-300 rounded-lg"
               placeholder="Enter your content"
-              maxLength={200}
+              maxLength={180}
             />
             {content.length < 10 && isValidating && (
               <div className="text-red-500">
@@ -83,11 +92,11 @@ const Home: NextPage = () => {
                 </span>
               </div>
             )}
-            {/* warn if content is over 200 chars */}
+            {/* warn if content is over 180 chars */}
             {content.length > 150 && (
               <div className="text-orange-500">
                 <span className="text-sm">
-                  {200 - content.length}/200 characters remaining
+                  {180 - content.length}/180 characters remaining
                 </span>
               </div>
             )}
@@ -122,13 +131,19 @@ const Home: NextPage = () => {
                 return (
                   <div className="mb-6" key={note.id}>
                     <div className="flex justify-between items-baseline">
-                      <div className="text-2xl">{note.title}</div>
-                      <div className="text-gray-500">
+                      <div className="text-2xl flex-1">
+                        <span style={breakWordStyle(note.title)}>
+                          {note.title}
+                        </span>
+                      </div>
+                      <div className="text-gray-500 whitespace-nowrap">
                         {new Date(note.createdAt).toLocaleString()}
                       </div>
                     </div>
                     <hr className="border-gray-300" />
-                    <p className="py-2">{note.content}</p>
+                    <p className="py-2" style={breakWordStyle(note.content)}>
+                      {note.content}
+                    </p>
                   </div>
                 );
               })}

@@ -12,7 +12,7 @@ export const exampleRouter = createRouter()
   .mutation("addNote", {
     input: z.object({
       title: z.string().min(4).max(20),
-      content: z.string().min(10).max(200),
+      content: z.string().min(10).max(180),
     }),
     async resolve({ ctx, input }) {
       return await ctx.prisma.note.create({
