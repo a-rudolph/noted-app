@@ -48,6 +48,51 @@ const Home: NextPage = () => {
     return notes.reverse();
   }, [data]);
 
+  const contentProps = useMemo(() => {
+    if (content.includes("\n")) {
+      return {
+        status: "border-warning",
+        extra: (
+          <div className="text-warning">
+            <span className="text-sm">
+              (new lines will be converted to spaces)
+            </span>
+          </div>
+        ),
+      };
+    }
+
+    if (content.length < 10 && isValidating) {
+      return {
+        status: "border-error",
+        extra: (
+          <div className="text-error">
+            <span className="text-sm">
+              Content must be at least 10 characters
+            </span>
+          </div>
+        ),
+      };
+    }
+
+    if (content.length > 150) {
+      return {
+        status: "border-warning",
+        extra: (
+          <div className="text-warning">
+            <span className="text-sm">
+              {180 - content.length}/180 characters remaining
+            </span>
+          </div>
+        ),
+      };
+    }
+
+    return {};
+  }, [content, isValidating]);
+
+  const titleError = title.length < 4 && isValidating;
+
   return (
     <>
       <Head>
@@ -57,58 +102,44 @@ const Home: NextPage = () => {
       </Head>
       <div className="flex flex-col items-center justify-center min-h-screen">
         <h1 className="font-extrabold mt-4 text-center text-7xl px-3">
-          <span className="text-blue-500">Noted</span> App
+          <span className="text-primary">Noted</span> App
         </h1>
         <div className="w-screen max-w-xl p-6">
-          <FormField label="Title">
+          <FormField
+            label="Title"
+            extra={
+              titleError && (
+                <span className="text-error">
+                  Title must be at least 4 characters
+                </span>
+              )
+            }
+          >
             <input
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full p-2 border-2 border-gray-300 rounded-lg"
+              className={`input input-bordered ${
+                titleError ? "border-error" : ""
+              }`}
               type="text"
               value={title}
               maxLength={20}
               placeholder="Enter a title"
             />
-            {title.length < 4 && isValidating && (
-              <div className="text-red-500">
-                <span className="text-sm">
-                  Title must be at least 4 characters
-                </span>
-              </div>
-            )}
           </FormField>
-          <FormField label="Content">
+          <FormField label="Content" extra={contentProps.extra}>
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="w-full p-2 border-2 border-gray-300 rounded-lg"
+              className={`input input-bordered ${contentProps.status} h-[160px] resize-none`}
               placeholder="Enter your content"
               maxLength={180}
             />
-            {content.length < 10 && isValidating && (
-              <div className="text-red-500">
-                <span className="text-sm">
-                  Content must be at least 10 characters
-                </span>
-              </div>
-            )}
-            {/* warn if content is over 180 chars */}
-            {content.length > 150 && (
-              <div className="text-orange-500">
-                <span className="text-sm">
-                  {180 - content.length}/180 characters remaining
-                </span>
-              </div>
-            )}
           </FormField>
-          <div className="flex justify-between mt-2 w-full">
-            <div>
-              {hasSubmitted && (
-                <div className="text-center text-blue-700">Noted!</div>
-              )}
-            </div>
+          <div className="flex justify-end w-full">
             <button
-              className="bg-blue-500 enabled:hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`btn btn-primary ${
+                contentProps.extra ? "mt-[-20px]" : ""
+              }`}
               disabled={isSubmitting || isLoading || hasSubmitted}
               onClick={() => {
                 setIsValidating(true);
@@ -118,7 +149,11 @@ const Home: NextPage = () => {
                 });
               }}
             >
-              Add Note
+              {hasSubmitted ? (
+                <div className="text-center text-primary">Noted!</div>
+              ) : (
+                <div className="text-center">Add Note</div>
+              )}
             </button>
           </div>
           <div className="py-6">
@@ -129,7 +164,7 @@ const Home: NextPage = () => {
               )}
               {reversedNotes.map((note) => {
                 return (
-                  <div className="mb-6" key={note.id}>
+                  <div className="prose mb-6" key={note.id}>
                     <div className="flex justify-between items-baseline">
                       <div className="text-2xl flex-1">
                         <span style={breakWordStyle(note.title)}>
@@ -140,10 +175,10 @@ const Home: NextPage = () => {
                         {new Date(note.createdAt).toLocaleString()}
                       </div>
                     </div>
-                    <hr className="border-gray-300" />
-                    <p className="py-2" style={breakWordStyle(note.content)}>
+                    <hr className="m-0" />
+                    <div className="py-2" style={breakWordStyle(note.content)}>
                       {note.content}
-                    </p>
+                    </div>
                   </div>
                 );
               })}
@@ -156,13 +191,33 @@ const Home: NextPage = () => {
 };
 
 const FormField: React.FC<{
-  label: string;
+  label?: [React.ReactNode, React.ReactNode] | React.ReactNode;
+  extra?: [React.ReactNode, React.ReactNode] | React.ReactNode;
   children: React.ReactNode;
-}> = ({ label, children }) => {
+}> = ({ extra, label, children }) => {
   return (
-    <div className="flex flex-col justify-center mb-6">
-      <label className="text-gray-700 text-md leading-loose">{label}</label>
+    <div className="form-control">
+      {Array.isArray(label) ? (
+        <label className="label">
+          {label[0] && <span className="label-text">{label[0]}</span>}
+          {label[1] && <span className="label-text-alt">{label[1]}</span>}
+        </label>
+      ) : (
+        <label className="label">
+          <span className="label-text">{label}</span>
+        </label>
+      )}
       {children}
+      {Array.isArray(extra) ? (
+        <label className="label">
+          {extra[0] && <span className="label-text-alt">{extra[0]}</span>}
+          {extra[1] && <span className="label-text-alt">{extra[1]}</span>}
+        </label>
+      ) : (
+        <label className="label">
+          <span className="label-text">{extra}</span>
+        </label>
+      )}
     </div>
   );
 };
