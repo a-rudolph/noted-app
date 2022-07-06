@@ -3,6 +3,27 @@ import Head from "next/head";
 import type { NextPage } from "next";
 import { trpc } from "../utils/trpc";
 import { useMemo, useState } from "react";
+import { createSSGHelpers } from "@trpc/react/ssg";
+import { appRouter } from "../server/router";
+import superjson from "superjson";
+import { createContext } from "../server/router/context";
+import moment from "moment";
+
+export const getStaticProps = async (ctx: any) => {
+  const ssg = await createSSGHelpers({
+    router: appRouter,
+    ctx: createContext(),
+    transformer: superjson,
+  });
+
+  await ssg.prefetchQuery("note.getAll");
+
+  return {
+    props: {
+      trpcState: ssg.dehydrate(),
+    },
+  };
+};
 
 const Home: NextPage = () => {
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -13,7 +34,9 @@ const Home: NextPage = () => {
 
   const utils = trpc.useContext();
 
-  const { data, isLoading } = trpc.useQuery(["note.getAll"]);
+  const { data, isLoading } = trpc.useQuery(["note.getAll"], {
+    refetchOnWindowFocus: false,
+  });
 
   const { mutate, isLoading: isSubmitting } = trpc.useMutation(
     ["note.addNote"],
@@ -140,7 +163,7 @@ const Home: NextPage = () => {
               className={`btn btn-primary ${
                 contentProps.extra ? "mt-[-20px]" : ""
               }`}
-              disabled={isSubmitting || isLoading || hasSubmitted}
+              disabled={isSubmitting || hasSubmitted}
               onClick={() => {
                 setIsValidating(true);
                 mutate({
@@ -172,7 +195,7 @@ const Home: NextPage = () => {
                         </span>
                       </div>
                       <div className="text-gray-500 whitespace-nowrap">
-                        {new Date(note.createdAt).toLocaleString()}
+                        {moment(note.createdAt).format("lll")}
                       </div>
                     </div>
                     <hr className="m-0" />

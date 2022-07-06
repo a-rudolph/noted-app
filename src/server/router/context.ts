@@ -3,13 +3,10 @@ import * as trpc from "@trpc/server";
 import * as trpcNext from "@trpc/server/adapters/next";
 import { prisma } from "../db/client";
 
-export const createContext = ({
-  req,
-  res,
-}: trpcNext.CreateNextContextOptions) => {
+export const createContext = (options?: trpcNext.CreateNextContextOptions) => {
   return {
-    req,
-    res,
+    req: options?.req,
+    res: options?.res,
     prisma,
   };
 };
