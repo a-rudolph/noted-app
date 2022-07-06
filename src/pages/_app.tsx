@@ -38,11 +38,6 @@ export default withTRPC<AppRouter>({
     return {
       url,
       transformer: superjson,
-      queryClientConfig: {
-        defaultOptions: {
-          refetchOnWindowFocus: false,
-        },
-      },
     };
   },
   /**
