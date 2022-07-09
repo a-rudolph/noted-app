@@ -1,6 +1,7 @@
+import type { NextPage } from "next";
 import { signIn, signOut, useSession } from "next-auth/react";
 
-const SignInPage: React.FC = () => {
+const SignInPage: NextPage = () => {
   const { data, status } = useSession();
 
   return (

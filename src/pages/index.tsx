@@ -2,12 +2,13 @@ import type { CSSProperties } from "react";
 import Head from "next/head";
 import type { NextPage } from "next";
 import { trpc } from "../utils/trpc";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { createSSGHelpers } from "@trpc/react/ssg";
 import { appRouter } from "../server/router";
 import superjson from "superjson";
 import { createContext } from "../server/router/context";
-import moment from "moment";
+import NoteForm from "../components/NoteForm";
+import Note from "../components/Note";
 
 export const getStaticProps = async (ctx: any) => {
   const ssg = await createSSGHelpers({
@@ -26,41 +27,9 @@ export const getStaticProps = async (ctx: any) => {
 };
 
 const Home: NextPage = () => {
-  const [hasSubmitted, setHasSubmitted] = useState(false);
-  const [isValidating, setIsValidating] = useState(false);
-
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-
-  const utils = trpc.useContext();
-
   const { data, isLoading } = trpc.useQuery(["note.getAll"], {
     refetchOnWindowFocus: false,
   });
-
-  const { mutate, isLoading: isSubmitting } = trpc.useMutation(
-    ["note.addNote"],
-    {
-      onSuccess: () => {
-        utils.invalidateQueries(["note.getAll"]);
-        setHasSubmitted(true);
-        setIsValidating(false);
-        setTitle("");
-        setContent("");
-      },
-      onError: (error) => {
-        console.error(error.message);
-      },
-    }
-  );
-
-  const needsBreakWord = (content: string) => {
-    return !content.includes(" ");
-  };
-
-  const breakWordStyle = (content: string): CSSProperties => {
-    return needsBreakWord(content) ? { wordBreak: "break-word" } : {};
-  };
 
   const reversedNotes = useMemo(() => {
     // copy notes array
@@ -70,51 +39,6 @@ const Home: NextPage = () => {
 
     return notes.reverse();
   }, [data]);
-
-  const contentProps = useMemo(() => {
-    if (content.includes("\n")) {
-      return {
-        status: "border-warning",
-        extra: (
-          <div className="text-warning">
-            <span className="text-sm">
-              (new lines will be converted to spaces)
-            </span>
-          </div>
-        ),
-      };
-    }
-
-    if (content.length < 10 && isValidating) {
-      return {
-        status: "border-error",
-        extra: (
-          <div className="text-error">
-            <span className="text-sm">
-              Content must be at least 10 characters
-            </span>
-          </div>
-        ),
-      };
-    }
-
-    if (content.length > 150) {
-      return {
-        status: "border-warning",
-        extra: (
-          <div className="text-warning">
-            <span className="text-sm">
-              {180 - content.length}/180 characters remaining
-            </span>
-          </div>
-        ),
-      };
-    }
-
-    return {};
-  }, [content, isValidating]);
-
-  const titleError = title.length < 4 && isValidating;
 
   return (
     <>
@@ -128,120 +52,19 @@ const Home: NextPage = () => {
           <span className="text-primary">Noted</span> App
         </h1>
         <div className="w-screen max-w-xl p-6">
-          <FormField
-            label="Title"
-            extra={
-              titleError && (
-                <span className="text-error">
-                  Title must be at least 4 characters
-                </span>
-              )
-            }
-          >
-            <input
-              onChange={(e) => setTitle(e.target.value)}
-              className={`input input-bordered ${
-                titleError ? "border-error" : ""
-              }`}
-              type="text"
-              value={title}
-              maxLength={20}
-              placeholder="Enter a title"
-            />
-          </FormField>
-          <FormField label="Content" extra={contentProps.extra}>
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className={`input input-bordered ${contentProps.status} h-[160px] resize-none`}
-              placeholder="Enter your content"
-              maxLength={180}
-            />
-          </FormField>
-          <div className="flex justify-end w-full">
-            <button
-              className={`btn btn-primary ${
-                contentProps.extra ? "mt-[-20px]" : ""
-              }`}
-              disabled={isSubmitting || hasSubmitted}
-              onClick={() => {
-                setIsValidating(true);
-                mutate({
-                  title,
-                  content,
-                });
-              }}
-            >
-              {hasSubmitted ? (
-                <div className="text-center text-primary">Noted!</div>
-              ) : (
-                <div className="text-center">Add Note</div>
-              )}
-            </button>
-          </div>
+          <NoteForm />
           <div className="py-6">
-            <div>
-              {!data && isLoading && <div className="mb-6">...loading</div>}
-              {Boolean(!reversedNotes.length) && !isLoading && (
-                <div className="mb-6">no notes!</div>
-              )}
-              {reversedNotes.map((note) => {
-                return (
-                  <div className="prose mb-6" key={note.id}>
-                    <div className="flex justify-between items-baseline">
-                      <div className="text-2xl flex-1">
-                        <span style={breakWordStyle(note.title)}>
-                          {note.title}
-                        </span>
-                      </div>
-                      <div className="text-gray-500 whitespace-nowrap">
-                        {moment(note.createdAt).format("lll")}
-                      </div>
-                    </div>
-                    <hr className="m-0" />
-                    <div className="py-2" style={breakWordStyle(note.content)}>
-                      {note.content}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            {!data && isLoading && <div className="mb-6">...loading</div>}
+            {Boolean(!reversedNotes.length) && !isLoading && (
+              <div className="mb-6">no notes!</div>
+            )}
+            {reversedNotes.map((note) => {
+              return <Note key={note.id} note={note} />;
+            })}
           </div>
         </div>
       </div>
     </>
-  );
-};
-
-const FormField: React.FC<{
-  label?: [React.ReactNode, React.ReactNode] | React.ReactNode;
-  extra?: [React.ReactNode, React.ReactNode] | React.ReactNode;
-  children: React.ReactNode;
-}> = ({ extra, label, children }) => {
-  return (
-    <div className="form-control">
-      {Array.isArray(label) ? (
-        <label className="label">
-          {label[0] && <span className="label-text">{label[0]}</span>}
-          {label[1] && <span className="label-text-alt">{label[1]}</span>}
-        </label>
-      ) : (
-        <label className="label">
-          <span className="label-text">{label}</span>
-        </label>
-      )}
-      {children}
-      {Array.isArray(extra) ? (
-        <label className="label">
-          {extra[0] && <span className="label-text-alt">{extra[0]}</span>}
-          {extra[1] && <span className="label-text-alt">{extra[1]}</span>}
-        </label>
-      ) : (
-        <label className="label">
-          <span className="label-text">{extra}</span>
-        </label>
-      )}
-    </div>
   );
 };
 
