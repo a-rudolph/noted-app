@@ -12,6 +12,7 @@ console.log("GOOGLE_CLIENT_ID", GOOGLE_CLIENT_ID);
 console.log("GOOGLE_CLIENT_SECRET", GOOGLE_CLIENT_SECRET);
 
 export default NextAuth({
+  secret: process.env.NEXTAUTH_SECRET,
   // Configure one or more authentication providers
   adapter: PrismaAdapter(prisma),
   providers: [
