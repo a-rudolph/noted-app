@@ -71,6 +71,12 @@ const NoteForm: React.FC = () => {
     return {};
   }, [content, isValidating]);
 
+  const cx = (classNames: Record<string, boolean | null | undefined>) => {
+    return Object.keys(classNames)
+      .filter((key) => classNames[key])
+      .join(" ");
+  };
+
   return (
     <div>
       <FormField
@@ -85,7 +91,9 @@ const NoteForm: React.FC = () => {
       >
         <input
           onChange={(e) => setTitle(e.target.value)}
-          className={`input input-bordered ${titleError ? "border-error" : ""}`}
+          className={`input input-bordered ${cx({
+            "border-error": titleError,
+          })}`}
           type="text"
           value={title}
           maxLength={20}
@@ -103,9 +111,9 @@ const NoteForm: React.FC = () => {
       </FormField>
       <div className="flex justify-end w-full">
         <button
-          className={`btn btn-primary ${
-            contentProps.extra ? "mt-[-20px]" : ""
-          }`}
+          className={`btn btn-primary ${cx({
+            "mt-[-20px]": Boolean(contentProps.extra),
+          })}`}
           disabled={isSubmitting || hasSubmitted}
           onClick={() => {
             setIsValidating(true);
