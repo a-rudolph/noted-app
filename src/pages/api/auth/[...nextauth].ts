@@ -5,16 +5,46 @@ import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "../../../server/db/client";
 
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-
-console.log("GOOGLE_CLIENT_ID", GOOGLE_CLIENT_ID);
-console.log("GOOGLE_CLIENT_SECRET", GOOGLE_CLIENT_SECRET);
-
 export default NextAuth({
+  debug: true,
   secret: process.env.NEXTAUTH_SECRET,
   // Configure one or more authentication providers
   adapter: PrismaAdapter(prisma),
+  callbacks: {
+    async signIn(params) {
+      const { user, account, profile, email, credentials } = params;
+
+      console.log("signin:", String(params));
+
+      return true;
+    },
+    async redirect({ url, baseUrl }) {
+      console.log("redirect:", String(baseUrl));
+      return baseUrl;
+    },
+    async session({ session, user, token }) {
+      console.log("session:", String(session));
+      return session;
+    },
+    async jwt({ token, user, account, profile, isNewUser }) {
+      console.log("jwt:", String(token));
+      return token;
+    },
+  },
+  events: {
+    signIn: async (params) => {
+      console.log("signIn:", String(params));
+    },
+    createUser: async (params) => {
+      console.log("createUser:", String(params));
+    },
+    updateUser: async (params) => {
+      console.log("updateUser:", String(params));
+    },
+    linkAccount: async (params) => {
+      console.log("linkAccount:", String(params));
+    },
+  },
   providers: [
     CredentialsProvider({
       name: "Email",
@@ -47,6 +77,8 @@ export default NextAuth({
           throw new Error("Invalid password");
         }
         // Return the user object
+
+        console.log("authorize:", String(user));
         return user;
       },
     }),

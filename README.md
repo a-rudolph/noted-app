@@ -1,3 +1,13 @@
-# Create T3 App
+# Noted App
 
-This is an app bootstrapped according to the [init.tips](https://init.tips) stack, also known as the T3-Stack.
+A simple fullstack app to brush up on databases and learn some new technologies.
+
+## Getting Started
+
+First, run the development server:
+
+```bash
+npm run start
+```
+
+Open [http://localhost:3000](http://localhost:3000)
