@@ -8,6 +8,9 @@ import superjson from "superjson";
 import { createContext } from "../server/router/context";
 import NoteForm from "../components/NoteForm";
 import Note from "../components/Note";
+import { signIn, useSession } from "next-auth/react";
+import Link from "next/link";
+import { FaUserCircle } from "react-icons/fa";
 
 export const getStaticProps = async (ctx: any) => {
   const ssg = await createSSGHelpers({
@@ -26,6 +29,8 @@ export const getStaticProps = async (ctx: any) => {
 };
 
 const Home: NextPage = () => {
+  const session = useSession();
+
   const { data, isLoading } = trpc.useQuery(["note.getAll"], {
     refetchOnWindowFocus: false,
   });
@@ -46,6 +51,25 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className="flex flex-col items-center justify-center min-h-screen">
+        <div className="flex justify-end w-full">
+          {session.data?.user ? (
+            <Link href="/profile">
+              <button className="btn btn-link text-sky-400/75">
+                <FaUserCircle className="mr-1" />
+                {session.data.user.name}
+              </button>
+            </Link>
+          ) : (
+            <button
+              className="btn btn-link text-sky-400/75"
+              onClick={() => {
+                signIn();
+              }}
+            >
+              Sign In
+            </button>
+          )}
+        </div>
         <h1 className="font-extrabold mt-4 text-center text-7xl px-3">
           <span className="text-primary">Noted</span> App
         </h1>

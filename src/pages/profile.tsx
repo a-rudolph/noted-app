@@ -5,31 +5,31 @@ const SignInPage: NextPage = () => {
   const { data, status } = useSession();
 
   return (
-    <div className="flex flex-col mt-6 justify-center items-center">
-      <div className="text-center text-gray-700">
-        <h1 className="text-3xl leading-loose">{status}</h1>
+    <div className="flex flex-col justify-center items-center">
+      <div className="flex justify-end w-full">
         {data?.user ? (
-          <div>
-            <div className="text-2xl">{data.user.name}</div>
-            <button
-              className="bg-blue-500 enabled:hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={() => signOut()}
-            >
-              Sign out
-            </button>
-          </div>
+          <button
+            className="btn btn-link text-sky-400/75"
+            onClick={() => {
+              signOut();
+            }}
+          >
+            Sign Out
+          </button>
         ) : (
-          <>
-            <button
-              onClick={() => {
-                signIn();
-              }}
-              className="bg-blue-500 enabled:hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              sign in
-            </button>
-          </>
+          <button
+            className="btn btn-link text-sky-400/75"
+            onClick={() => {
+              signIn();
+            }}
+          >
+            Sign In
+          </button>
         )}
+      </div>
+      <div className="text-center">
+        <h1 className="text-3xl leading-loose">{status}</h1>
+        {data?.user && <div className="text-2xl">{data.user.name}</div>}
       </div>
     </div>
   );
