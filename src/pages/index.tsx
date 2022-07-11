@@ -51,15 +51,16 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className="flex flex-col items-center justify-center min-h-screen">
-        <div className="flex justify-end w-full">
-          {session.data?.user ? (
+        <div className="flex justify-end w-full min-h-12">
+          {session.data?.user && (
             <Link href="/profile">
               <button className="btn btn-link gap-2 text-accent">
-                <FaUserCircle />
                 {session.data.user.name}
+                <FaUserCircle />
               </button>
             </Link>
-          ) : (
+          )}
+          {session.status === "unauthenticated" && (
             <button
               className="btn btn-link text-accent"
               onClick={() => {
