@@ -9,7 +9,7 @@ const SignInPage: NextPage = () => {
       <div className="flex justify-end w-full">
         {data?.user ? (
           <button
-            className="btn btn-link text-sky-400/75"
+            className="btn btn-link text-accent"
             onClick={() => {
               signOut();
             }}
@@ -18,7 +18,7 @@ const SignInPage: NextPage = () => {
           </button>
         ) : (
           <button
-            className="btn btn-link text-sky-400/75"
+            className="btn btn-link text-accent"
             onClick={() => {
               signIn();
             }}

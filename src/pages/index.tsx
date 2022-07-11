@@ -54,14 +54,14 @@ const Home: NextPage = () => {
         <div className="flex justify-end w-full">
           {session.data?.user ? (
             <Link href="/profile">
-              <button className="btn btn-link text-sky-400/75">
-                <FaUserCircle className="mr-1" />
+              <button className="btn btn-link gap-2 text-accent">
+                <FaUserCircle />
                 {session.data.user.name}
               </button>
             </Link>
           ) : (
             <button
-              className="btn btn-link text-sky-400/75"
+              className="btn btn-link text-accent"
               onClick={() => {
                 signIn();
               }}
