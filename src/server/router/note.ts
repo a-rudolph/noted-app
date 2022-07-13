@@ -6,13 +6,17 @@ import { z } from "zod";
 const getUser = async (ctx: Context) => {
   const session = await getSession(ctx);
 
-  const user = await ctx.prisma.user.findFirst({
-    where: {
-      email: session?.email as string,
-    },
-  });
+  if (session?.user?.email) {
+    const user = await ctx.prisma.user.findUnique({
+      where: {
+        email: session?.user?.email || "",
+      },
+    });
 
-  return user;
+    return user;
+  }
+
+  return null;
 };
 
 export const noteRouter = createRouter()
@@ -28,7 +32,7 @@ export const noteRouter = createRouter()
       const user = await getUser(ctx);
 
       if (!user) {
-        throw new Error("User not found");
+        return { notes: [] };
       }
 
       const notes = await ctx.prisma.note.findMany({
