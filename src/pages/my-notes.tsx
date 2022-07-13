@@ -19,7 +19,7 @@ export const getServerSideProps = async (ctx: any) => {
     transformer: superjson,
   });
 
-  await ssg.prefetchQuery("note.getAll");
+  await ssg.prefetchQuery("note.getByUser");
 
   const currentSession = await getSession({ req: ctx.req });
 
@@ -31,10 +31,10 @@ export const getServerSideProps = async (ctx: any) => {
   };
 };
 
-const Home: NextPage<
+const MyNotes: NextPage<
   InferGetServerSidePropsType<typeof getServerSideProps>
 > = ({ currentSession: session }) => {
-  const { data, isLoading } = trpc.useQuery(["note.getAll"], {
+  const { data, isLoading } = trpc.useQuery(["note.getByUser"], {
     refetchOnWindowFocus: false,
   });
 
@@ -51,7 +51,7 @@ const Home: NextPage<
   return (
     <>
       <Head>
-        <title>Noted App</title>
+        <title>My - Noted</title>
         <meta name="description" content="share notes" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -75,13 +75,10 @@ const Home: NextPage<
             </button>
           )}
         </div>
-        <h1 className="font-extrabold mt-4 text-center text-7xl px-3">
-          <span className="text-primary">Noted</span> App
-        </h1>
         <div className="w-screen max-w-xl p-6">
           <NoteForm
             onSubmit={() => {
-              utils.invalidateQueries(["note.getAll"]);
+              utils.invalidateQueries(["note.getByUser"]);
             }}
           />
           <div className="py-6">
@@ -99,4 +96,4 @@ const Home: NextPage<
   );
 };
 
-export default Home;
+export default MyNotes;

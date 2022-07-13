@@ -1,20 +1,18 @@
 import { trpc } from "../utils/trpc";
 import { useMemo, useState } from "react";
 
-const NoteForm: React.FC = () => {
+const NoteForm: React.FC<{ onSubmit: VoidFunction }> = ({ onSubmit }) => {
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
-  const utils = trpc.useContext();
-
   const { mutate, isLoading: isSubmitting } = trpc.useMutation(
     ["note.addNote"],
     {
       onSuccess: () => {
-        utils.invalidateQueries(["note.getAll"]);
+        onSubmit();
         setHasSubmitted(true);
         setIsValidating(false);
         setTitle("");

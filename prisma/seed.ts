@@ -11,9 +11,9 @@ const load = async () => {
     console.log("reset note auto increment to 1");
 
     const notes = Array.from({ length: 10 }).map((_, i) => ({
-      name: `Note ${i}`,
       title: `Note ${i}`,
       content: `This is note ${i}`,
+      authorId: "1",
       createdAt: new Date(new Date().setMinutes(i * 17)),
     }));
 
