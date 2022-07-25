@@ -10,9 +10,10 @@ datasource db {
 }
 
 model Note {
-  id      String @id @default(cuid())
-  title   String
-  content String
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  isPrivate Boolean? @default(false)
 
   author   User   @relation(fields: [authorId], references: [id])
   authorId String

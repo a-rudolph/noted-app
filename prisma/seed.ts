@@ -10,10 +10,18 @@ const load = async () => {
     await prisma.$queryRaw`ALTER TABLE Note AUTO_INCREMENT = 1`;
     console.log("reset note auto increment to 1");
 
+    await prisma.user.create({
+      data: {
+        id: "1",
+        name: "Robot",
+      },
+    });
+
     const notes = Array.from({ length: 10 }).map((_, i) => ({
       title: `Note ${i}`,
       content: `This is note ${i}`,
       authorId: "1",
+      isPrivate: i % 3 === 0,
       createdAt: new Date(new Date().setMinutes(i * 17)),
     }));
 
