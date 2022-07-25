@@ -1,5 +1,6 @@
 import { trpc } from "../utils/trpc";
 import { useMemo, useState } from "react";
+import { cx } from "../utils/classnames";
 
 const NoteForm: React.FC<{ onSubmit: VoidFunction }> = ({ onSubmit }) => {
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -68,12 +69,6 @@ const NoteForm: React.FC<{ onSubmit: VoidFunction }> = ({ onSubmit }) => {
 
     return {};
   }, [content, isValidating]);
-
-  const cx = (classNames: Record<string, boolean | null | undefined>) => {
-    return Object.keys(classNames)
-      .filter((key) => classNames[key])
-      .join(" ");
-  };
 
   return (
     <div>

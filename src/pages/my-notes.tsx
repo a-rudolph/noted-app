@@ -50,7 +50,7 @@ const MyNotes: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className="flex flex-col items-center justify-center min-h-screen">
-        <div className="flex justify-end w-full min-h-12 gap-2">
+        <div className="flex justify-end w-full">
           <Link href="/">
             <button className="btn btn-link text-accent">Home</button>
           </Link>
