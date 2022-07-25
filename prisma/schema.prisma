@@ -15,8 +15,8 @@ model Note {
   content   String
   isPrivate Boolean? @default(false)
 
-  author   User   @relation(fields: [authorId], references: [id])
-  authorId String
+  author   User?   @relation(fields: [authorId], references: [id])
+  authorId String?
 
   createdAt DateTime @default(now())
 }
