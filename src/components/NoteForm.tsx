@@ -1,6 +1,8 @@
 import { trpc } from "../utils/trpc";
 import { useMemo, useState } from "react";
 import { cx } from "../utils/classnames";
+import { useSession } from "next-auth/react";
+import { FaBookOpen, FaLock } from "react-icons/fa";
 
 const NoteForm: React.FC<{ onSubmit: VoidFunction }> = ({ onSubmit }) => {
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -8,6 +10,10 @@ const NoteForm: React.FC<{ onSubmit: VoidFunction }> = ({ onSubmit }) => {
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+
+  const { status } = useSession();
+
+  const isAuthed = status === "authenticated";
 
   const { mutate, isLoading: isSubmitting } = trpc.useMutation(
     ["note.addNote"],
@@ -103,26 +109,90 @@ const NoteForm: React.FC<{ onSubmit: VoidFunction }> = ({ onSubmit }) => {
         />
       </FormField>
       <div className="flex justify-end w-full">
-        <button
-          className={`btn btn-primary ${cx({
+        <AddNoteButton
+          canNotePrivately={isAuthed}
+          className={cx({
             "mt-[-20px]": Boolean(contentProps.extra),
-          })}`}
-          disabled={isSubmitting || hasSubmitted}
-          onClick={() => {
+          })}
+          isDisabled={isSubmitting || hasSubmitted}
+          isNoted={hasSubmitted}
+          onClick={(isPrivate) => {
             setIsValidating(true);
             mutate({
               title,
               content,
+              isPrivate,
             });
           }}
-        >
-          {hasSubmitted ? (
-            <div className="text-center text-primary">Noted!</div>
-          ) : (
-            <div className="text-center">Add Note</div>
-          )}
-        </button>
+        />
       </div>
+    </div>
+  );
+};
+
+const AddNoteButton: React.FC<{
+  onClick: (isPrivate: boolean) => void;
+  canNotePrivately: boolean;
+  isDisabled: boolean;
+  isNoted: boolean;
+  className: string;
+}> = ({ onClick, className, isNoted, isDisabled, canNotePrivately }) => {
+  const [isPrivate, setIsPrivate] = useState(false);
+
+  if (isNoted) {
+    return (
+      <button
+        className={`btn btn-primary w-40 ${className}`}
+        disabled={isDisabled}
+      >
+        <div className="text-center text-primary">Noted!</div>
+      </button>
+    );
+  }
+
+  const btnTheme = cx({
+    "btn-primary": !isPrivate,
+    "btn-secondary": isPrivate,
+  });
+
+  if (!canNotePrivately) {
+    return (
+      <button
+        className={`btn ${btnTheme} w-40 ${className}`}
+        disabled={isDisabled}
+        onClick={() => onClick(false)}
+      >
+        <div className="text-center flex gap-4 items-center">
+          <span className="text-sm">Post Note</span>
+          <FaBookOpen />
+        </div>
+      </button>
+    );
+  }
+
+  return (
+    <div className={`flex items-center w-40 ${className}`}>
+      <button
+        className={`btn ${btnTheme} rounded-r-none`}
+        disabled={isDisabled}
+        onClick={() => onClick(isPrivate)}
+      >
+        {isPrivate && <div className="text-center">Save Note</div>}
+        {isPrivate || <div className="text-center">Post Note</div>}
+      </button>
+      {canNotePrivately && (
+        <div className="tooltip" data-tip="toggle privacy">
+          <button
+            disabled={isDisabled}
+            onClick={() => {
+              setIsPrivate((prev) => !prev);
+            }}
+            className={`btn ${btnTheme} rounded-l-none`}
+          >
+            {isPrivate ? <FaLock /> : <FaBookOpen />}
+          </button>
+        </div>
+      )}
     </div>
   );
 };

@@ -22,7 +22,11 @@ const getUser = async (ctx: Context) => {
 export const noteRouter = createRouter()
   .query("getAll", {
     async resolve({ ctx }) {
-      const notes = await ctx.prisma.note.findMany();
+      const notes = await ctx.prisma.note.findMany({
+        where: {
+          isPrivate: false,
+        },
+      });
 
       return { notes };
     },
@@ -48,16 +52,17 @@ export const noteRouter = createRouter()
     input: z.object({
       title: z.string().min(4).max(20),
       content: z.string().min(10).max(180),
+      isPrivate: z.boolean().optional(),
     }),
     async resolve({ ctx, input }) {
       const user = await getUser(ctx);
 
-      if (!user) {
-        throw new Error("User not found");
+      if (!user && input.isPrivate) {
+        throw new Error("You must be logged in to add private notes");
       }
 
       return await ctx.prisma.note.create({
-        data: { ...input, authorId: user.id },
+        data: { ...input, authorId: user?.id },
       });
     },
   });
