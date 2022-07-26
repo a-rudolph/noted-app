@@ -10,6 +10,7 @@ const NoteForm: React.FC<{ onSubmit: VoidFunction }> = ({ onSubmit }) => {
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [isPrivate, setIsPrivate] = useState(false);
 
   const { status } = useSession();
 
@@ -110,13 +111,12 @@ const NoteForm: React.FC<{ onSubmit: VoidFunction }> = ({ onSubmit }) => {
       </FormField>
       <div className="flex justify-end w-full">
         <AddNoteButton
+          isPrivate={isPrivate}
+          setIsPrivate={setIsPrivate}
           canNotePrivately={isAuthed}
-          className={cx({
-            "mt-[-20px]": Boolean(contentProps.extra),
-          })}
           isDisabled={isSubmitting || hasSubmitted}
           isNoted={hasSubmitted}
-          onClick={(isPrivate) => {
+          onClick={() => {
             setIsValidating(true);
             mutate({
               title,
@@ -131,20 +131,25 @@ const NoteForm: React.FC<{ onSubmit: VoidFunction }> = ({ onSubmit }) => {
 };
 
 const AddNoteButton: React.FC<{
-  onClick: (isPrivate: boolean) => void;
+  onClick: VoidFunction;
   canNotePrivately: boolean;
   isDisabled: boolean;
   isNoted: boolean;
-  className: string;
-}> = ({ onClick, className, isNoted, isDisabled, canNotePrivately }) => {
-  const [isPrivate, setIsPrivate] = useState(false);
+  isPrivate: boolean;
+  setIsPrivate: (cb: (isPrivate: boolean) => boolean) => void;
+}> = ({
+  onClick,
+  isNoted,
+  isDisabled,
+  canNotePrivately,
+  isPrivate,
+  setIsPrivate,
+}) => {
+  const [removeTooltip, setRemoveTooltip] = useState(false);
 
   if (isNoted) {
     return (
-      <button
-        className={`btn btn-primary w-40 ${className}`}
-        disabled={isDisabled}
-      >
+      <button className={`btn btn-primary w-40`} disabled={isDisabled}>
         <div className="text-center text-primary">Noted!</div>
       </button>
     );
@@ -158,11 +163,11 @@ const AddNoteButton: React.FC<{
   if (!canNotePrivately) {
     return (
       <button
-        className={`btn ${btnTheme} w-40 ${className}`}
+        className={`btn ${btnTheme} w-40`}
         disabled={isDisabled}
-        onClick={() => onClick(false)}
+        onClick={onClick}
       >
-        <div className="text-center flex gap-4 items-center">
+        <div className="text-center flex justify-between w-full items-center">
           <span className="text-sm">Post Note</span>
           <FaBookOpen />
         </div>
@@ -171,20 +176,24 @@ const AddNoteButton: React.FC<{
   }
 
   return (
-    <div className={`flex items-center w-40 ${className}`}>
+    <div className={`flex items-center w-40`}>
       <button
         className={`btn ${btnTheme} rounded-r-none`}
         disabled={isDisabled}
-        onClick={() => onClick(isPrivate)}
+        onClick={onClick}
       >
         {isPrivate && <div className="text-center">Save Note</div>}
         {isPrivate || <div className="text-center">Post Note</div>}
       </button>
       {canNotePrivately && (
-        <div className="tooltip" data-tip="toggle privacy">
+        <div
+          className={cx({ tooltip: !removeTooltip })}
+          data-tip="toggle privacy"
+        >
           <button
             disabled={isDisabled}
             onClick={() => {
+              setRemoveTooltip(true);
               setIsPrivate((prev) => !prev);
             }}
             className={`btn ${btnTheme} rounded-l-none`}
@@ -221,7 +230,7 @@ const FormField: React.FC<{
           {extra[1] && <span className="label-text-alt">{extra[1]}</span>}
         </label>
       ) : (
-        <label className="label">
+        <label className="label h-6">
           <span className="label-text">{extra}</span>
         </label>
       )}
