@@ -193,7 +193,10 @@ const AddNoteButton: React.FC<{
       </button>
       {canNotePrivately && (
         <div
-          className={cx({ tooltip: !removeTooltip })}
+          className={cx({
+            tooltip: !removeTooltip,
+            "overflow-visible": true,
+          })}
           data-tip="toggle privacy"
         >
           <button

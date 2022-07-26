@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { AiOutlineClose, AiOutlinePlus } from "react-icons/ai";
 import { cx } from "../utils/classnames";
+import Tooltip from "./Tooltip";
 
 const Collapse: React.FC<{
   title: React.ReactNode;
@@ -12,25 +13,26 @@ const Collapse: React.FC<{
   return (
     <>
       <div className="flex justify-end">
-        <button
-          className="btn btn-circle btn-primary"
-          onClick={() => {
-            setIsOpen((isOpen) => !isOpen);
-          }}
-        >
-          <span className="text-xl">
-            {isOpen ? <AiOutlineClose /> : <AiOutlinePlus />}
-          </span>
-        </button>
+        <Tooltip title="add a note" closed={!isOpen}>
+          <button
+            className="btn btn-circle btn-primary"
+            onClick={() => {
+              setIsOpen((isOpen) => !isOpen);
+            }}
+          >
+            <span className="text-xl">
+              {isOpen ? <AiOutlineClose /> : <AiOutlinePlus />}
+            </span>
+          </button>
+        </Tooltip>
       </div>
       <div
-        tabIndex={0}
-        className={`collapse ${cx({
-          "collapse-open": isOpen,
-          "collapse-close": !isOpen,
+        className={`
+        ${cx({
+          hidden: !isOpen,
         })}`}
       >
-        <div className="collapse-content">{children}</div>
+        {children}
       </div>
     </>
   );
