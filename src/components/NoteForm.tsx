@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { cx } from "../utils/classnames";
 import { useSession } from "next-auth/react";
 import { FaBookOpen, FaLock } from "react-icons/fa";
+import Collapse from "./Collapse";
 
 const NoteForm: React.FC<{ onSubmit: VoidFunction }> = ({ onSubmit }) => {
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -78,7 +79,12 @@ const NoteForm: React.FC<{ onSubmit: VoidFunction }> = ({ onSubmit }) => {
   }, [content, isValidating]);
 
   return (
-    <div>
+    <Collapse
+      title={
+        <button className="btn btn-link gap-2 text-accent">write note</button>
+      }
+      defaultOpen={false}
+    >
       <FormField
         label="Title"
         extra={
@@ -126,7 +132,7 @@ const NoteForm: React.FC<{ onSubmit: VoidFunction }> = ({ onSubmit }) => {
           }}
         />
       </div>
-    </div>
+    </Collapse>
   );
 };
 
