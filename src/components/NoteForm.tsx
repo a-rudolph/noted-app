@@ -4,6 +4,7 @@ import { cx } from "../utils/classnames";
 import { useSession } from "next-auth/react";
 import { FaBookOpen, FaLock } from "react-icons/fa";
 import Collapse from "./Collapse";
+import Tooltip from "./Tooltip";
 
 const NoteForm: React.FC<{ onSubmit: VoidFunction }> = ({ onSubmit }) => {
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -192,24 +193,20 @@ const AddNoteButton: React.FC<{
         {isPrivate || <div className="text-center">Post Note</div>}
       </button>
       {canNotePrivately && (
-        <div
-          className={cx({
-            tooltip: !removeTooltip,
-            "overflow-visible": true,
-          })}
-          data-tip="toggle privacy"
-        >
+        <Tooltip title="toggle privacy">
           <button
             disabled={isDisabled}
             onClick={() => {
-              setRemoveTooltip(true);
               setIsPrivate((prev) => !prev);
             }}
-            className={`btn ${btnTheme} rounded-l-none`}
+            className={`btn ${btnTheme} ${cx({
+              "border-l-primary-focus": !isPrivate,
+              "border-l-secondary-focus": isPrivate,
+            })} rounded-l-none border-2`}
           >
             {isPrivate ? <FaLock /> : <FaBookOpen />}
           </button>
-        </div>
+        </Tooltip>
       )}
     </div>
   );

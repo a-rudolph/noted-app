@@ -65,4 +65,36 @@ export const noteRouter = createRouter()
         data: { ...input, authorId: user?.id },
       });
     },
+  })
+  .mutation("deleteNote", {
+    input: z.object({
+      id: z.string(),
+    }),
+    async resolve({ ctx, input }) {
+      const user = await getUser(ctx);
+
+      if (!user) {
+        throw new Error("You must be logged in to delete notes");
+      }
+
+      const note = await ctx.prisma.note.findUnique({
+        where: {
+          id: input.id,
+        },
+      });
+
+      if (!note) {
+        throw new Error("Note not found");
+      }
+
+      if (note.authorId !== user.id) {
+        throw new Error("You cannot delete notes that you did not create");
+      }
+
+      return await ctx.prisma.note.delete({
+        where: {
+          id: input.id,
+        },
+      });
+    },
   });

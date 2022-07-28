@@ -8,6 +8,19 @@ import { prisma } from "../../../server/db/client";
 export default NextAuth({
   secret: process.env.NEXTAUTH_SECRET,
   adapter: PrismaAdapter(prisma),
+  callbacks: {
+    async session({ session, user }) {
+      const userWithId = {
+        ...session.user,
+        id: user.id,
+      };
+
+      return {
+        ...session,
+        user: userWithId,
+      };
+    },
+  },
   providers: [
     // CredentialsProvider({
     //   name: "Email",
