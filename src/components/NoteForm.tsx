@@ -6,7 +6,9 @@ import { FaBookOpen, FaLock } from "react-icons/fa";
 import Collapse from "./Collapse";
 import Tooltip from "./Tooltip";
 
-const NoteForm: React.FC<{ onSubmit: VoidFunction }> = ({ onSubmit }) => {
+const NoteForm: React.FC<{ onSubmit: VoidFunction }> = ({
+  onSubmit,
+}) => {
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
 
@@ -18,9 +20,8 @@ const NoteForm: React.FC<{ onSubmit: VoidFunction }> = ({ onSubmit }) => {
 
   const isAuthed = status === "authenticated";
 
-  const { mutate, isLoading: isSubmitting } = trpc.useMutation(
-    ["note.addNote"],
-    {
+  const { mutate, isLoading: isSubmitting } =
+    trpc.useMutation(["note.addNote"], {
       onSuccess: () => {
         onSubmit();
         setHasSubmitted(true);
@@ -31,8 +32,7 @@ const NoteForm: React.FC<{ onSubmit: VoidFunction }> = ({ onSubmit }) => {
       onError: (error) => {
         console.error(error.message);
       },
-    }
-  );
+    });
 
   const titleError = title.length < 4 && isValidating;
 
@@ -69,7 +69,8 @@ const NoteForm: React.FC<{ onSubmit: VoidFunction }> = ({ onSubmit }) => {
         extra: (
           <div className="text-warning">
             <span className="text-sm">
-              {180 - content.length}/180 characters remaining
+              {180 - content.length}/180 characters
+              remaining
             </span>
           </div>
         ),
@@ -82,7 +83,9 @@ const NoteForm: React.FC<{ onSubmit: VoidFunction }> = ({ onSubmit }) => {
   return (
     <Collapse
       title={
-        <button className="btn btn-link gap-2 text-accent">write note</button>
+        <button className="btn btn-link gap-2 text-accent">
+          write note
+        </button>
       }
       defaultOpen={false}
     >
@@ -103,7 +106,7 @@ const NoteForm: React.FC<{ onSubmit: VoidFunction }> = ({ onSubmit }) => {
           })}`}
           type="text"
           value={title}
-          maxLength={20}
+          maxLength={40}
           placeholder="Enter a title"
         />
       </FormField>
@@ -143,7 +146,9 @@ const AddNoteButton: React.FC<{
   isDisabled: boolean;
   isNoted: boolean;
   isPrivate: boolean;
-  setIsPrivate: (cb: (isPrivate: boolean) => boolean) => void;
+  setIsPrivate: (
+    cb: (isPrivate: boolean) => boolean
+  ) => void;
 }> = ({
   onClick,
   isNoted,
@@ -156,8 +161,13 @@ const AddNoteButton: React.FC<{
 
   if (isNoted) {
     return (
-      <button className={`btn btn-primary w-40`} disabled={isDisabled}>
-        <div className="text-center text-primary">Noted!</div>
+      <button
+        className={`btn btn-primary w-40`}
+        disabled={isDisabled}
+      >
+        <div className="text-center text-primary">
+          Noted!
+        </div>
       </button>
     );
   }
@@ -189,8 +199,12 @@ const AddNoteButton: React.FC<{
         disabled={isDisabled}
         onClick={onClick}
       >
-        {isPrivate && <div className="text-center">Save Note</div>}
-        {isPrivate || <div className="text-center">Post Note</div>}
+        {isPrivate && (
+          <div className="text-center">Save Note</div>
+        )}
+        {isPrivate || (
+          <div className="text-center">Post Note</div>
+        )}
       </button>
       {canNotePrivately && (
         <Tooltip title="toggle privacy">
@@ -213,16 +227,26 @@ const AddNoteButton: React.FC<{
 };
 
 const FormField: React.FC<{
-  label?: [React.ReactNode, React.ReactNode] | React.ReactNode;
-  extra?: [React.ReactNode, React.ReactNode] | React.ReactNode;
+  label?:
+    | [React.ReactNode, React.ReactNode]
+    | React.ReactNode;
+  extra?:
+    | [React.ReactNode, React.ReactNode]
+    | React.ReactNode;
   children: React.ReactNode;
 }> = ({ extra, label, children }) => {
   return (
     <div className="form-control">
       {Array.isArray(label) ? (
         <label className="label">
-          {label[0] && <span className="label-text">{label[0]}</span>}
-          {label[1] && <span className="label-text-alt">{label[1]}</span>}
+          {label[0] && (
+            <span className="label-text">{label[0]}</span>
+          )}
+          {label[1] && (
+            <span className="label-text-alt">
+              {label[1]}
+            </span>
+          )}
         </label>
       ) : (
         <label className="label">
@@ -232,8 +256,16 @@ const FormField: React.FC<{
       {children}
       {Array.isArray(extra) ? (
         <label className="label">
-          {extra[0] && <span className="label-text-alt">{extra[0]}</span>}
-          {extra[1] && <span className="label-text-alt">{extra[1]}</span>}
+          {extra[0] && (
+            <span className="label-text-alt">
+              {extra[0]}
+            </span>
+          )}
+          {extra[1] && (
+            <span className="label-text-alt">
+              {extra[1]}
+            </span>
+          )}
         </label>
       ) : (
         <label className="label h-6">

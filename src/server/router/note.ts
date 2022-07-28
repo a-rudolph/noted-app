@@ -19,6 +19,21 @@ const getUser = async (ctx: Context) => {
   return null;
 };
 
+const noteSelect = {
+  id: true,
+  title: true,
+  content: true,
+  createdAt: true,
+  isPrivate: true,
+  author: {
+    select: {
+      id: true,
+      name: true,
+      image: true,
+    },
+  },
+};
+
 export const noteRouter = createRouter()
   .query("getAll", {
     async resolve({ ctx }) {
@@ -26,6 +41,10 @@ export const noteRouter = createRouter()
         where: {
           isPrivate: false,
         },
+        orderBy: {
+          createdAt: "desc",
+        },
+        select: noteSelect,
       });
 
       return { notes };
@@ -36,12 +55,18 @@ export const noteRouter = createRouter()
       const user = await getUser(ctx);
 
       if (!user) {
-        return { notes: [] };
+        if (ctx.res) ctx.res.statusCode = 401;
+        // return { error: "Unauthorized" };
+        throw new Error("Unauthorized");
       }
 
       const notes = await ctx.prisma.note.findMany({
         where: {
           authorId: user.id,
+        },
+        select: noteSelect,
+        orderBy: {
+          createdAt: "desc",
         },
       });
 
@@ -50,7 +75,7 @@ export const noteRouter = createRouter()
   })
   .mutation("addNote", {
     input: z.object({
-      title: z.string().min(4).max(20),
+      title: z.string().min(4).max(40),
       content: z.string().min(10).max(180),
       isPrivate: z.boolean().optional(),
     }),
@@ -58,7 +83,9 @@ export const noteRouter = createRouter()
       const user = await getUser(ctx);
 
       if (!user && input.isPrivate) {
-        throw new Error("You must be logged in to add private notes");
+        throw new Error(
+          "You must be logged in to add private notes"
+        );
       }
 
       return await ctx.prisma.note.create({
@@ -74,7 +101,9 @@ export const noteRouter = createRouter()
       const user = await getUser(ctx);
 
       if (!user) {
-        throw new Error("You must be logged in to delete notes");
+        throw new Error(
+          "You must be logged in to delete notes"
+        );
       }
 
       const note = await ctx.prisma.note.findUnique({
@@ -88,7 +117,9 @@ export const noteRouter = createRouter()
       }
 
       if (note.authorId !== user.id) {
-        throw new Error("You cannot delete notes that you did not create");
+        throw new Error(
+          "You cannot delete notes that you did not create"
+        );
       }
 
       return await ctx.prisma.note.delete({

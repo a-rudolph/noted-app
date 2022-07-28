@@ -28,19 +28,16 @@ export const getServerSideProps = async () => {
 };
 
 const MyNotes: NextPage = () => {
-  const { data, isLoading } = trpc.useQuery(["note.getByUser"], {
-    refetchOnWindowFocus: false,
-  });
+  const { data, isLoading } = trpc.useQuery(
+    ["note.getByUser"],
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
 
   const utils = trpc.useContext();
 
-  const reversedNotes = useMemo(() => {
-    if (!data) return [];
-
-    const notes = [...data.notes];
-
-    return notes.reverse();
-  }, [data]);
+  const notes = data?.notes || [];
 
   return (
     <>
@@ -52,7 +49,9 @@ const MyNotes: NextPage = () => {
       <div className="flex flex-col items-center justify-center min-h-screen">
         <div className="flex justify-end w-full">
           <Link href="/">
-            <button className="btn btn-link text-accent">Home</button>
+            <button className="btn btn-link text-accent">
+              Home
+            </button>
           </Link>
           <ProfileButton />
         </div>
@@ -66,11 +65,13 @@ const MyNotes: NextPage = () => {
             }}
           />
           <div className="py-6">
-            {!data && isLoading && <div className="mb-6">...loading</div>}
-            {Boolean(!reversedNotes.length) && !isLoading && (
+            {!data && isLoading && (
+              <div className="mb-6">...loading</div>
+            )}
+            {Boolean(!notes.length) && !isLoading && (
               <div className="mb-6">no notes!</div>
             )}
-            {reversedNotes.map((note) => {
+            {notes.map((note) => {
               return <Note key={note.id} note={note} />;
             })}
           </div>
