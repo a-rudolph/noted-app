@@ -3,10 +3,11 @@ import moment from "moment";
 import { FaTrash, FaEdit } from "react-icons/fa";
 import { useTypedSession } from "../utils/use-typed-session";
 import { trpc } from "../utils/trpc";
-import { InferQueryOutput } from "../utils/trpc-helpers";
+import type { InferQueryOutput } from "../utils/trpc-helpers";
 import NoteForm from "./NoteForm";
 import React from "react";
 import { Card } from "./Card";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 type NoteType =
   InferQueryOutput<"note.getAll">["notes"][number];
@@ -39,6 +40,8 @@ const Note: React.FC<{ note: NoteType }> = ({ note }) => {
   const { deleteNote, isMyNote } = useNote(note);
   const [isEditing, setIsEditing] = React.useState(false);
 
+  const [animateParent] = useAutoAnimate<HTMLDivElement>();
+
   const needsBreakWord = (content: string) => {
     return !content.includes(" ");
   };
@@ -53,7 +56,7 @@ const Note: React.FC<{ note: NoteType }> = ({ note }) => {
 
   if (isEditing) {
     return (
-      <div className="note mb-10">
+      <div ref={animateParent} className="note mb-10">
         <Card>
           <NoteForm
             initialValues={{
@@ -62,6 +65,7 @@ const Note: React.FC<{ note: NoteType }> = ({ note }) => {
               isPrivate: note.isPrivate || false,
             }}
             noteId={note.id}
+            onCancel={() => setIsEditing(false)}
             onSuccess={() => {
               setIsEditing(false);
             }}
@@ -72,7 +76,7 @@ const Note: React.FC<{ note: NoteType }> = ({ note }) => {
   }
 
   return (
-    <div className="note mb-10">
+    <div ref={animateParent} className="note mb-10">
       <div className="flex justify-between m-2">
         <div className="text-gray-500 whitespace-nowrap">
           {note.author?.name}
