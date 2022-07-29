@@ -4,6 +4,8 @@ import { FaTrash } from "react-icons/fa";
 import { useTypedSession } from "../utils/use-typed-session";
 import { trpc } from "../utils/trpc";
 import { InferQueryOutput } from "../utils/trpc-helpers";
+import NoteForm from "./NoteForm";
+import React from "react";
 
 type NoteType =
   InferQueryOutput<"note.getAll">["notes"][number];
@@ -30,6 +32,27 @@ const useNote = (note: NoteType) => {
   };
 };
 
+const Card: React.FC<{
+  title?: React.ReactNode;
+  children: React.ReactNode;
+}> = ({ children, title }) => {
+  return (
+    <div className="card card-compact bg-base-300 prose">
+      <div className="card-body">
+        {title && (
+          <>
+            <div className="card-title text-2xl">
+              {title}
+            </div>
+            <hr className="m-0" />
+          </>
+        )}
+        {children}
+      </div>
+    </div>
+  );
+};
+
 const Note: React.FC<{ note: NoteType }> = ({ note }) => {
   const { deleteNote, isMyNote } = useNote(note);
 
@@ -45,6 +68,18 @@ const Note: React.FC<{ note: NoteType }> = ({ note }) => {
       : {};
   };
 
+  const isFormMode = false;
+
+  if (isFormMode) {
+    return (
+      <div className="note mb-10">
+        <Card>
+          <NoteForm />
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="note mb-10">
       <div className="flex justify-between m-2">
@@ -55,13 +90,10 @@ const Note: React.FC<{ note: NoteType }> = ({ note }) => {
           {moment(note.createdAt).format("lll")}
         </div>
       </div>
-      <div
-        className="card card-compact bg-base-300 prose"
-        key={note.id}
-      >
-        <div className="card-body">
+      <Card
+        title={
           <div className="flex justify-between items-baseline">
-            <div className="card-title text-2xl flex-1">
+            <div className="flex-1">
               <span style={breakWordStyle(note.title)}>
                 {note.title}
               </span>
@@ -75,15 +107,15 @@ const Note: React.FC<{ note: NoteType }> = ({ note }) => {
               </button>
             )}
           </div>
-          <hr className="m-0" />
-          <div
-            className="py-2"
-            style={breakWordStyle(note.content)}
-          >
-            {note.content}
-          </div>
+        }
+      >
+        <div
+          className="py-2"
+          style={breakWordStyle(note.content)}
+        >
+          {note.content}
         </div>
-      </div>
+      </Card>
     </div>
   );
 };

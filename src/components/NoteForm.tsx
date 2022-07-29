@@ -1,38 +1,26 @@
 import { trpc } from "../utils/trpc";
 import { useMemo, useState } from "react";
 import { cx } from "../utils/classnames";
-import { useSession } from "next-auth/react";
 import { FaBookOpen, FaLock } from "react-icons/fa";
 import Collapse from "./Collapse";
 import Tooltip from "./Tooltip";
+import { FormProps, useForm } from "../utils/use-form";
+import { useAuthed } from "../utils/use-authed";
 
-const NoteForm: React.FC<{ onSubmit: VoidFunction }> = ({
-  onSubmit,
-}) => {
-  const [hasSubmitted, setHasSubmitted] = useState(false);
-  const [isValidating, setIsValidating] = useState(false);
+type NoteValues = {
+  title: string;
+  content: string;
+  isPrivate: boolean;
+};
 
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [isPrivate, setIsPrivate] = useState(false);
+type NoteFormProps = FormProps<NoteValues>;
 
-  const { status } = useSession();
-
-  const isAuthed = status === "authenticated";
-
-  const { mutate, isLoading: isSubmitting } =
-    trpc.useMutation(["note.addNote"], {
-      onSuccess: () => {
-        onSubmit();
-        setHasSubmitted(true);
-        setIsValidating(false);
-        setTitle("");
-        setContent("");
-      },
-      onError: (error) => {
-        console.error(error.message);
-      },
-    });
+const NoteFields: React.FC<{
+  values: Partial<NoteValues>;
+  isValidating?: boolean;
+  editForm: (values: Partial<NoteValues>) => void;
+}> = ({ values, editForm, isValidating }) => {
+  const { title = "", content = "" } = values;
 
   const titleError = title.length < 4 && isValidating;
 
@@ -81,14 +69,7 @@ const NoteForm: React.FC<{ onSubmit: VoidFunction }> = ({
   }, [content, isValidating]);
 
   return (
-    <Collapse
-      title={
-        <button className="btn btn-link gap-2 text-accent">
-          write note
-        </button>
-      }
-      defaultOpen={false}
-    >
+    <div>
       <FormField
         label="Title"
         extra={
@@ -100,7 +81,9 @@ const NoteForm: React.FC<{ onSubmit: VoidFunction }> = ({
         }
       >
         <input
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) =>
+            editForm({ title: e.target.value })
+          }
           className={`input input-bordered ${cx({
             "border-error": titleError,
           })}`}
@@ -113,27 +96,85 @@ const NoteForm: React.FC<{ onSubmit: VoidFunction }> = ({
       <FormField label="Content" extra={contentProps.extra}>
         <textarea
           value={content}
-          onChange={(e) => setContent(e.target.value)}
+          onChange={(e) =>
+            editForm({ content: e.target.value })
+          }
           className={`input input-bordered ${contentProps.status} h-[160px] resize-none`}
           placeholder="Enter your content"
           maxLength={180}
         />
       </FormField>
+    </div>
+  );
+};
+
+const NoteForm: React.FC<NoteFormProps> = ({
+  initialValues,
+}) => {
+  const utils = trpc.useContext();
+
+  const isAuthed = useAuthed();
+
+  const {
+    isValidating,
+    editForm,
+    resetForm,
+    values,
+    validateFields,
+  } = useForm({ initialValues });
+
+  const { mutate, isLoading } = trpc.useMutation(
+    ["note.addNote"],
+    {
+      onSuccess: () => {
+        utils.invalidateQueries(["note.getAll"]);
+        resetForm();
+      },
+      onError: (error) => {
+        console.error(error.message);
+      },
+    }
+  );
+
+  const handleSubmit = () => {
+    validateFields((values) => {
+      const validate = (
+        values: Partial<NoteValues>
+      ): values is NoteValues => {
+        return Boolean(values.content && values.title);
+      };
+
+      if (!validate(values)) {
+        return;
+      }
+
+      mutate(values);
+    });
+  };
+
+  const { isPrivate } = values;
+
+  return (
+    <Collapse
+      title={
+        <button className="btn btn-link gap-2 text-accent">
+          write note
+        </button>
+      }
+      defaultOpen={false}
+    >
+      <NoteFields
+        values={values}
+        isValidating={isValidating}
+        editForm={editForm}
+      />
       <div className="flex justify-end w-full">
         <AddNoteButton
-          isPrivate={isPrivate}
-          setIsPrivate={setIsPrivate}
+          isPrivate={!!isPrivate}
+          setIsPrivate={(cb) => cb(!!isPrivate)}
           canNotePrivately={isAuthed}
-          isDisabled={isSubmitting || hasSubmitted}
-          isNoted={hasSubmitted}
-          onClick={() => {
-            setIsValidating(true);
-            mutate({
-              title,
-              content,
-              isPrivate,
-            });
-          }}
+          isDisabled={isLoading}
+          onClick={handleSubmit}
         />
       </div>
     </Collapse>
@@ -144,7 +185,7 @@ const AddNoteButton: React.FC<{
   onClick: VoidFunction;
   canNotePrivately: boolean;
   isDisabled: boolean;
-  isNoted: boolean;
+  isNoted?: boolean;
   isPrivate: boolean;
   setIsPrivate: (
     cb: (isPrivate: boolean) => boolean

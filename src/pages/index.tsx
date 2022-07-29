@@ -35,8 +35,6 @@ const Home: NextPage = () => {
     }
   );
 
-  const utils = trpc.useContext();
-
   const notes = data?.notes || [];
 
   return (
@@ -66,11 +64,7 @@ const Home: NextPage = () => {
           <span className="text-primary">Noted</span> App
         </h1>
         <div className="w-screen max-w-xl p-6">
-          <NoteForm
-            onSubmit={() => {
-              utils.invalidateQueries(["note.getAll"]);
-            }}
-          />
+          <NoteForm />
           <div className="py-6">
             {!data && isLoading && (
               <div className="mb-6">...loading</div>
@@ -78,7 +72,7 @@ const Home: NextPage = () => {
             {Boolean(!notes.length) && !isLoading && (
               <div className="mb-6">no notes!</div>
             )}
-            {notes.map((note) => {
+            {notes.map((note, ind) => {
               return <Note key={note.id} note={note} />;
             })}
           </div>
