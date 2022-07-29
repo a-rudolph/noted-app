@@ -1,13 +1,16 @@
 import { useState } from "react";
-import { AiOutlineClose, AiOutlinePlus } from "react-icons/ai";
+import {
+  AiOutlineClose,
+  AiOutlinePlus,
+} from "react-icons/ai";
 import { cx } from "../utils/classnames";
 import Tooltip from "./Tooltip";
 
 const Collapse: React.FC<{
-  title: React.ReactNode;
+  title?: React.ReactNode;
   children: React.ReactNode;
   defaultOpen: boolean;
-}> = ({ title, children, defaultOpen }) => {
+}> = ({ children, defaultOpen }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
@@ -21,7 +24,11 @@ const Collapse: React.FC<{
             }}
           >
             <span className="text-xl">
-              {isOpen ? <AiOutlineClose /> : <AiOutlinePlus />}
+              {isOpen ? (
+                <AiOutlineClose />
+              ) : (
+                <AiOutlinePlus />
+              )}
             </span>
           </button>
         </Tooltip>

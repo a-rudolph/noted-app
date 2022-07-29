@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import moment from "moment";
-import { FaTrash } from "react-icons/fa";
+import { FaTrash, FaEdit } from "react-icons/fa";
 import { useTypedSession } from "../utils/use-typed-session";
 import { trpc } from "../utils/trpc";
 import { InferQueryOutput } from "../utils/trpc-helpers";
@@ -55,6 +55,7 @@ const Card: React.FC<{
 
 const Note: React.FC<{ note: NoteType }> = ({ note }) => {
   const { deleteNote, isMyNote } = useNote(note);
+  const [isEditing, setIsEditing] = React.useState(false);
 
   const needsBreakWord = (content: string) => {
     return !content.includes(" ");
@@ -68,13 +69,21 @@ const Note: React.FC<{ note: NoteType }> = ({ note }) => {
       : {};
   };
 
-  const isFormMode = false;
-
-  if (isFormMode) {
+  if (isEditing) {
     return (
       <div className="note mb-10">
         <Card>
-          <NoteForm />
+          <NoteForm
+            initialValues={{
+              title: note.title,
+              content: note.content,
+              isPrivate: note.isPrivate || false,
+            }}
+            noteId={note.id}
+            onSuccess={() => {
+              setIsEditing(false);
+            }}
+          />
         </Card>
       </div>
     );
@@ -99,12 +108,22 @@ const Note: React.FC<{ note: NoteType }> = ({ note }) => {
               </span>
             </div>
             {isMyNote && (
-              <button
-                className="btn btn-link text-secondary"
-                onClick={deleteNote}
-              >
-                <FaTrash />
-              </button>
+              <div className="flex gap-2">
+                <button
+                  className="btn btn-link text-secondary"
+                  onClick={() => {
+                    setIsEditing(true);
+                  }}
+                >
+                  <FaEdit />
+                </button>
+                <button
+                  className="btn btn-link text-secondary"
+                  onClick={deleteNote}
+                >
+                  <FaTrash />
+                </button>
+              </div>
             )}
           </div>
         }

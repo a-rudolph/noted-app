@@ -1,115 +1,22 @@
 import { trpc } from "../utils/trpc";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { cx } from "../utils/classnames";
 import { FaBookOpen, FaLock } from "react-icons/fa";
-import Collapse from "./Collapse";
 import Tooltip from "./Tooltip";
 import { FormProps, useForm } from "../utils/use-form";
 import { useAuthed } from "../utils/use-authed";
+import { NoteFields } from "./NoteFields";
+import type { NoteValues } from "./NoteFields";
 
-type NoteValues = {
-  title: string;
-  content: string;
-  isPrivate: boolean;
-};
-
-type NoteFormProps = FormProps<NoteValues>;
-
-const NoteFields: React.FC<{
-  values: Partial<NoteValues>;
-  isValidating?: boolean;
-  editForm: (values: Partial<NoteValues>) => void;
-}> = ({ values, editForm, isValidating }) => {
-  const { title = "", content = "" } = values;
-
-  const titleError = title.length < 4 && isValidating;
-
-  const contentProps = useMemo(() => {
-    if (content.includes("\n")) {
-      return {
-        status: "border-warning",
-        extra: (
-          <div className="text-warning">
-            <span className="text-sm">
-              (new lines will be converted to spaces)
-            </span>
-          </div>
-        ),
-      };
-    }
-
-    if (content.length < 10 && isValidating) {
-      return {
-        status: "border-error",
-        extra: (
-          <div className="text-error">
-            <span className="text-sm">
-              Content must be at least 10 characters
-            </span>
-          </div>
-        ),
-      };
-    }
-
-    if (content.length > 150) {
-      return {
-        status: "border-warning",
-        extra: (
-          <div className="text-warning">
-            <span className="text-sm">
-              {180 - content.length}/180 characters
-              remaining
-            </span>
-          </div>
-        ),
-      };
-    }
-
-    return {};
-  }, [content, isValidating]);
-
-  return (
-    <div>
-      <FormField
-        label="Title"
-        extra={
-          titleError && (
-            <span className="text-error">
-              Title must be at least 4 characters
-            </span>
-          )
-        }
-      >
-        <input
-          onChange={(e) =>
-            editForm({ title: e.target.value })
-          }
-          className={`input input-bordered ${cx({
-            "border-error": titleError,
-          })}`}
-          type="text"
-          value={title}
-          maxLength={40}
-          placeholder="Enter a title"
-        />
-      </FormField>
-      <FormField label="Content" extra={contentProps.extra}>
-        <textarea
-          value={content}
-          onChange={(e) =>
-            editForm({ content: e.target.value })
-          }
-          className={`input input-bordered ${contentProps.status} h-[160px] resize-none`}
-          placeholder="Enter your content"
-          maxLength={180}
-        />
-      </FormField>
-    </div>
-  );
+type NoteFormProps = FormProps<NoteValues> & {
+  noteId?: string;
+  onSuccess?: () => void;
 };
 
 const NoteForm: React.FC<NoteFormProps> = ({
   initialValues,
+  noteId,
+  onSuccess,
 }) => {
   const utils = trpc.useContext();
 
@@ -123,18 +30,22 @@ const NoteForm: React.FC<NoteFormProps> = ({
     validateFields,
   } = useForm({ initialValues });
 
-  const { mutate, isLoading } = trpc.useMutation(
-    ["note.addNote"],
-    {
-      onSuccess: () => {
-        utils.invalidateQueries(["note.getAll"]);
-        resetForm();
-      },
-      onError: (error) => {
-        console.error(error.message);
-      },
-    }
-  );
+  const mutateOptions = {
+    onSuccess: () => {
+      utils.invalidateQueries(["note.getAll"]);
+      utils.invalidateQueries(["note.getByUser"]);
+      resetForm();
+      onSuccess?.();
+    },
+  };
+
+  const { mutate: create, isLoading: isCreating } =
+    trpc.useMutation(["note.addNote"], mutateOptions);
+
+  const { mutate: update, isLoading: isUpdating } =
+    trpc.useMutation(["note.updateNote"], mutateOptions);
+
+  const isLoading = isCreating || isUpdating;
 
   const handleSubmit = () => {
     validateFields((values) => {
@@ -148,21 +59,22 @@ const NoteForm: React.FC<NoteFormProps> = ({
         return;
       }
 
-      mutate(values);
+      if (noteId) {
+        update({
+          id: noteId,
+          ...values,
+        });
+        return;
+      }
+
+      create(values);
     });
   };
 
   const { isPrivate } = values;
 
   return (
-    <Collapse
-      title={
-        <button className="btn btn-link gap-2 text-accent">
-          write note
-        </button>
-      }
-      defaultOpen={false}
-    >
+    <>
       <NoteFields
         values={values}
         isValidating={isValidating}
@@ -171,13 +83,15 @@ const NoteForm: React.FC<NoteFormProps> = ({
       <div className="flex justify-end w-full">
         <AddNoteButton
           isPrivate={!!isPrivate}
-          setIsPrivate={(cb) => cb(!!isPrivate)}
+          togglePrivate={() => {
+            editForm({ isPrivate: !isPrivate });
+          }}
           canNotePrivately={isAuthed}
           isDisabled={isLoading}
           onClick={handleSubmit}
         />
       </div>
-    </Collapse>
+    </>
   );
 };
 
@@ -187,16 +101,14 @@ const AddNoteButton: React.FC<{
   isDisabled: boolean;
   isNoted?: boolean;
   isPrivate: boolean;
-  setIsPrivate: (
-    cb: (isPrivate: boolean) => boolean
-  ) => void;
+  togglePrivate: VoidFunction;
 }> = ({
   onClick,
   isNoted,
   isDisabled,
   canNotePrivately,
   isPrivate,
-  setIsPrivate,
+  togglePrivate,
 }) => {
   const [removeTooltip, setRemoveTooltip] = useState(false);
 
@@ -252,7 +164,7 @@ const AddNoteButton: React.FC<{
           <button
             disabled={isDisabled}
             onClick={() => {
-              setIsPrivate((prev) => !prev);
+              togglePrivate();
             }}
             className={`btn ${btnTheme} ${cx({
               "border-l-primary-focus": !isPrivate,
@@ -262,56 +174,6 @@ const AddNoteButton: React.FC<{
             {isPrivate ? <FaLock /> : <FaBookOpen />}
           </button>
         </Tooltip>
-      )}
-    </div>
-  );
-};
-
-const FormField: React.FC<{
-  label?:
-    | [React.ReactNode, React.ReactNode]
-    | React.ReactNode;
-  extra?:
-    | [React.ReactNode, React.ReactNode]
-    | React.ReactNode;
-  children: React.ReactNode;
-}> = ({ extra, label, children }) => {
-  return (
-    <div className="form-control">
-      {Array.isArray(label) ? (
-        <label className="label">
-          {label[0] && (
-            <span className="label-text">{label[0]}</span>
-          )}
-          {label[1] && (
-            <span className="label-text-alt">
-              {label[1]}
-            </span>
-          )}
-        </label>
-      ) : (
-        <label className="label">
-          <span className="label-text">{label}</span>
-        </label>
-      )}
-      {children}
-      {Array.isArray(extra) ? (
-        <label className="label">
-          {extra[0] && (
-            <span className="label-text-alt">
-              {extra[0]}
-            </span>
-          )}
-          {extra[1] && (
-            <span className="label-text-alt">
-              {extra[1]}
-            </span>
-          )}
-        </label>
-      ) : (
-        <label className="label h-6">
-          <span className="label-text">{extra}</span>
-        </label>
       )}
     </div>
   );

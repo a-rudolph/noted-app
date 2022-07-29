@@ -10,6 +10,7 @@ import NoteForm from "../components/NoteForm";
 import Note from "../components/Note";
 import ProfileButton from "../components/ProfileButton";
 import Link from "next/link";
+import Collapse from "../components/Collapse";
 
 export const getServerSideProps = async () => {
   const ssg = await createSSGHelpers({
@@ -59,11 +60,9 @@ const MyNotes: NextPage = () => {
           <h1 className="w-full font-bold text-4xl mb-2">
             Take <span className="text-primary">Note</span>
           </h1>
-          <NoteForm
-            onSubmit={() => {
-              utils.invalidateQueries(["note.getByUser"]);
-            }}
-          />
+          <Collapse defaultOpen={false}>
+            <NoteForm />
+          </Collapse>
           <div className="py-6">
             {!data && isLoading && (
               <div className="mb-6">...loading</div>

@@ -128,4 +128,44 @@ export const noteRouter = createRouter()
         },
       });
     },
+  })
+  .mutation("updateNote", {
+    input: z.object({
+      id: z.string(),
+      title: z.string().min(4).max(40),
+      content: z.string().min(10).max(180),
+      isPrivate: z.boolean().optional(),
+    }),
+    async resolve({ ctx, input }) {
+      const user = await getUser(ctx);
+
+      if (!user) {
+        throw new Error(
+          "You must be logged in to update notes"
+        );
+      }
+
+      const note = await ctx.prisma.note.findUnique({
+        where: {
+          id: input.id,
+        },
+      });
+
+      if (!note) {
+        throw new Error("Note not found");
+      }
+
+      if (note.authorId !== user.id) {
+        throw new Error(
+          "You cannot update notes that you did not create"
+        );
+      }
+
+      return await ctx.prisma.note.update({
+        where: {
+          id: input.id,
+        },
+        data: { ...input },
+      });
+    },
   });

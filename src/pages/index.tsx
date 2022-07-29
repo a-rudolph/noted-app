@@ -10,6 +10,7 @@ import NoteForm from "../components/NoteForm";
 import Note from "../components/Note";
 import Link from "next/link";
 import ProfileButton from "../components/ProfileButton";
+import Collapse from "../components/Collapse";
 
 export const getServerSideProps = async () => {
   const ssg = await createSSGHelpers({
@@ -64,7 +65,9 @@ const Home: NextPage = () => {
           <span className="text-primary">Noted</span> App
         </h1>
         <div className="w-screen max-w-xl p-6">
-          <NoteForm />
+          <Collapse defaultOpen={false}>
+            <NoteForm />
+          </Collapse>
           <div className="py-6">
             {!data && isLoading && (
               <div className="mb-6">...loading</div>
