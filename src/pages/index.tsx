@@ -45,7 +45,7 @@ const Home: NextPage = () => {
         <meta name="description" content="share notes" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div className="flex flex-col items-center justify-center min-h-screen">
+      <div className="flex flex-col items-center min-h-screen">
         <div className="flex justify-end w-full">
           <ProfileButton
             extraBefore={(isAuthed) => {
