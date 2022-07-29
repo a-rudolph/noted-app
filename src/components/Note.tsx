@@ -6,6 +6,7 @@ import { trpc } from "../utils/trpc";
 import { InferQueryOutput } from "../utils/trpc-helpers";
 import NoteForm from "./NoteForm";
 import React from "react";
+import { Card } from "./Card";
 
 type NoteType =
   InferQueryOutput<"note.getAll">["notes"][number];
@@ -22,7 +23,9 @@ const useNote = (note: NoteType) => {
 
   const { data } = useTypedSession();
 
-  const isMyNote = data?.user?.id === note.author?.id;
+  // if we don't check that there is also a user, then unauthed with === unauthoredNote
+  const isMyNote =
+    data?.user && data?.user?.id === note.author?.id;
 
   return {
     deleteNote: () => {
@@ -30,27 +33,6 @@ const useNote = (note: NoteType) => {
     },
     isMyNote,
   };
-};
-
-const Card: React.FC<{
-  title?: React.ReactNode;
-  children: React.ReactNode;
-}> = ({ children, title }) => {
-  return (
-    <div className="card card-compact bg-base-300 prose">
-      <div className="card-body">
-        {title && (
-          <>
-            <div className="card-title text-2xl">
-              {title}
-            </div>
-            <hr className="m-0" />
-          </>
-        )}
-        {children}
-      </div>
-    </div>
-  );
 };
 
 const Note: React.FC<{ note: NoteType }> = ({ note }) => {
@@ -101,16 +83,16 @@ const Note: React.FC<{ note: NoteType }> = ({ note }) => {
       </div>
       <Card
         title={
-          <div className="flex justify-between items-baseline">
+          <div className="flex w-full justify-between items-baseline">
             <div className="flex-1">
               <span style={breakWordStyle(note.title)}>
                 {note.title}
               </span>
             </div>
             {isMyNote && (
-              <div className="flex gap-2">
+              <div className="flex">
                 <button
-                  className="btn btn-link text-secondary"
+                  className="btn btn-link text-accent"
                   onClick={() => {
                     setIsEditing(true);
                   }}

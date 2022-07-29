@@ -1,7 +1,6 @@
 import Head from "next/head";
 import type { NextPage } from "next";
 import { trpc } from "../utils/trpc";
-import { useMemo } from "react";
 import { createSSGHelpers } from "@trpc/react/ssg";
 import { appRouter } from "../server/router";
 import superjson from "superjson";
