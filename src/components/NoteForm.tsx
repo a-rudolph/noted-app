@@ -11,12 +11,14 @@ import type { NoteValues } from "./NoteFields";
 type NoteFormProps = FormProps<NoteValues> & {
   noteId?: string;
   onSuccess?: () => void;
+  onCancel?: () => void;
 };
 
 const NoteForm: React.FC<NoteFormProps> = ({
   initialValues,
   noteId,
   onSuccess,
+  onCancel,
 }) => {
   const utils = trpc.useContext();
 
@@ -46,6 +48,11 @@ const NoteForm: React.FC<NoteFormProps> = ({
     trpc.useMutation(["note.updateNote"], mutateOptions);
 
   const isLoading = isCreating || isUpdating;
+
+  const handleCancel = () => {
+    resetForm();
+    onCancel?.();
+  };
 
   const handleSubmit = () => {
     validateFields((values) => {
@@ -80,7 +87,16 @@ const NoteForm: React.FC<NoteFormProps> = ({
         isValidating={isValidating}
         editForm={editForm}
       />
-      <div className="flex justify-end w-full">
+      <div className="flex justify-end w-full gap-2">
+        {onCancel && (
+          <button
+            className="btn"
+            onClick={handleCancel}
+            disabled={isLoading}
+          >
+            Cancel
+          </button>
+        )}
         <AddNoteButton
           isPrivate={!!isPrivate}
           togglePrivate={() => {
