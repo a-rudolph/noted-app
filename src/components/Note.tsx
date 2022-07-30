@@ -135,6 +135,7 @@ const Note: React.FC<{
         </div>
       </div>
       <Card
+        onClose={isEditing && (() => setIsEditing(false))}
         leftFlair={note.isPrivate ? "secondary" : "primary"}
         title={
           !isEditing && (
@@ -162,7 +163,6 @@ const Note: React.FC<{
               isPrivate: note.isPrivate || false,
             }}
             noteId={note.id}
-            onCancel={() => setIsEditing(false)}
             onSuccess={() => {
               setIsEditing(false);
             }}
