@@ -9,24 +9,6 @@ import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { cx } from "../utils/classnames";
 import { useInfiniteNotes } from "../utils/use-infinite-notes";
 import { Loader } from "../components/Loader";
-import { useCallback, useEffect, useRef } from "react";
-
-const useOnScrollToBottom = (onScrolled: VoidFunction) => {
-  const onScroll = useCallback(() => {
-    const { scrollHeight, scrollTop, clientHeight } =
-      document.documentElement;
-    if (scrollHeight - scrollTop - clientHeight < 100) {
-      onScrolled();
-    }
-  }, [onScrolled]);
-
-  useEffect(() => {
-    window.addEventListener("scroll", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-    };
-  }, [onScroll]);
-};
 
 const Home: NextPage = () => {
   const {
@@ -36,24 +18,6 @@ const Home: NextPage = () => {
     fetchNextPage,
     isFetchingNextPage,
   } = useInfiniteNotes();
-
-  const throttling = useRef(false);
-
-  const onScroll = useCallback(async () => {
-    if (throttling.current) return;
-
-    throttling.current = true;
-
-    setTimeout(() => {
-      throttling.current = false;
-    }, 600);
-
-    if (!isFetchingNextPage && hasNextPage) {
-      fetchNextPage();
-    }
-  }, [isFetchingNextPage, hasNextPage, fetchNextPage]);
-
-  useOnScrollToBottom(onScroll);
 
   const [animateParent] = useAutoAnimate<HTMLDivElement>();
 
