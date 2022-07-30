@@ -4,7 +4,7 @@ import NoteForm from "../components/NoteForm";
 import Note from "../components/Note";
 import ProfileButton from "../components/ProfileButton";
 import Link from "next/link";
-import Collapse from "../components/Collapse";
+import { NoteButton } from "../components/NoteButton";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { useInfiniteNotes } from "../utils/use-infinite-notes";
 import { cx } from "../utils/classnames";
@@ -41,9 +41,15 @@ const MyNotes: NextPage = () => {
           <h1 className="w-full font-bold text-4xl mb-2">
             Take <span className="text-primary">Note</span>
           </h1>
-          <Collapse defaultOpen={false}>
-            <NoteForm />
-          </Collapse>
+          <NoteButton>
+            {({ setIsOpen }) => (
+              <NoteForm
+                onSuccess={() => {
+                  setIsOpen(false);
+                }}
+              />
+            )}
+          </NoteButton>
           <div className="py-6" ref={animateParent}>
             {notes.map((note) => {
               return (
