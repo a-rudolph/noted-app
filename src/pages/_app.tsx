@@ -5,6 +5,7 @@ import superjson from "superjson";
 import { SessionProvider } from "next-auth/react";
 import "../styles/globals.css";
 import { ReactQueryDevtools } from "react-query/devtools";
+import { notification } from "../utils/notification";
 
 const MyApp: AppType = ({
   Component,
@@ -14,6 +15,10 @@ const MyApp: AppType = ({
     <SessionProvider session={session}>
       <Component {...pageProps} />
       <ReactQueryDevtools />
+      <div
+        className="h-screen w-screen fixed pointer-events-none top-0 left-0 p-4 pr-8 flex flex-col items-end gap-2"
+        id="notification-layer"
+      ></div>
     </SessionProvider>
   );
 };
@@ -39,6 +44,27 @@ export default withTRPC<AppRouter>({
 
     return {
       url,
+      queryClientConfig: {
+        defaultOptions: {
+          mutations: {
+            onError(err) {
+              const error = err as Error;
+              if ("message" in error) {
+                notification(error.message);
+              }
+            },
+          },
+          queries: {
+            retry: 0,
+            onError(err) {
+              const error = err as Error;
+              if ("message" in error) {
+                notification(error.message);
+              }
+            },
+          },
+        },
+      },
       transformer: superjson,
     };
   },

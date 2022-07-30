@@ -12,6 +12,7 @@ import React from "react";
 import { Card } from "./Card";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { UNDO_MS } from "../utils/constants";
+import { notification } from "../utils/notification";
 
 type NoteType =
   InferQueryOutput<"note.getAll">["notes"][number];
@@ -43,6 +44,7 @@ const useNote = (note: NoteType, queryKey: TQuery) => {
     },
     // If the mutation fails, use the context returned from onMutate to roll back
     onError: (err, newTodo, context) => {
+      notification(err.message);
       utils.setQueryData(
         [queryKey],
         context?.previousNotes || { notes: [] }
