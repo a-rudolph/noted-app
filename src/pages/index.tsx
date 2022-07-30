@@ -1,7 +1,6 @@
 import Head from "next/head";
 import type { NextPage } from "next";
 import { trpc } from "../utils/trpc";
-import { useMemo } from "react";
 import { createSSGHelpers } from "@trpc/react/ssg";
 import { appRouter } from "../server/router";
 import superjson from "superjson";
@@ -78,8 +77,14 @@ const Home: NextPage = () => {
             {Boolean(!notes.length) && !isLoading && (
               <div className="mb-6">no notes!</div>
             )}
-            {notes.map((note, ind) => {
-              return <Note key={note.id} note={note} />;
+            {notes.map((note) => {
+              return (
+                <Note
+                  queryKey="note.getAll"
+                  key={note.id}
+                  note={note}
+                />
+              );
             })}
           </div>
         </div>

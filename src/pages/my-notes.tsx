@@ -35,8 +35,6 @@ const MyNotes: NextPage = () => {
     }
   );
 
-  const utils = trpc.useContext();
-
   const notes = data?.notes || [];
 
   return (
@@ -70,7 +68,13 @@ const MyNotes: NextPage = () => {
               <div className="mb-6">no notes!</div>
             )}
             {notes.map((note) => {
-              return <Note key={note.id} note={note} />;
+              return (
+                <Note
+                  queryKey="note.getByUser"
+                  key={note.id}
+                  note={note}
+                />
+              );
             })}
           </div>
         </div>

@@ -3,7 +3,10 @@ import moment from "moment";
 import { FaTrash, FaEdit, FaUndoAlt } from "react-icons/fa";
 import { useTypedSession } from "../utils/use-typed-session";
 import { trpc } from "../utils/trpc";
-import type { InferQueryOutput } from "../utils/trpc-helpers";
+import type {
+  InferQueryOutput,
+  TQuery,
+} from "../utils/trpc-helpers";
 import NoteForm from "./NoteForm";
 import React from "react";
 import { Card } from "./Card";
@@ -13,13 +16,41 @@ import { UNDO_MS } from "../utils/constants";
 type NoteType =
   InferQueryOutput<"note.getAll">["notes"][number];
 
-const useNote = (note: NoteType) => {
+const useNote = (note: NoteType, queryKey: TQuery) => {
   const utils = trpc.useContext();
 
   const { mutate } = trpc.useMutation("note.deleteNote", {
-    onSuccess: () => {
-      utils.invalidateQueries("note.getAll");
-      utils.invalidateQueries("note.getByUser");
+    onMutate: async ({ id }) => {
+      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+      await utils.cancelQuery([queryKey]);
+
+      // Snapshot the previous value
+      const previousNotes = utils.getQueryData([queryKey]);
+
+      // Optimistically update to the new value
+      utils.setQueryData([queryKey], (prev) => {
+        const newNotes = prev?.notes.filter(
+          (n) => n.id !== id
+        );
+
+        return {
+          notes: newNotes || [],
+        };
+      });
+
+      // Return a context object with the snapshotted value
+      return { previousNotes };
+    },
+    // If the mutation fails, use the context returned from onMutate to roll back
+    onError: (err, newTodo, context) => {
+      utils.setQueryData(
+        [queryKey],
+        context?.previousNotes || { notes: [] }
+      );
+    },
+    // Always refetch after error or success:
+    onSettled: () => {
+      utils.invalidateQueries([queryKey]);
     },
   });
 
@@ -37,8 +68,11 @@ const useNote = (note: NoteType) => {
   };
 };
 
-const Note: React.FC<{ note: NoteType }> = ({ note }) => {
-  const { deleteNote, isMyNote } = useNote(note);
+const Note: React.FC<{
+  note: NoteType;
+  queryKey: TQuery;
+}> = ({ note, queryKey }) => {
+  const { deleteNote, isMyNote } = useNote(note, queryKey);
   const [isEditing, setIsEditing] = useState(false);
 
   const [animateParent] = useAutoAnimate<HTMLDivElement>();
