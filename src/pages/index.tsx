@@ -8,25 +8,19 @@ import Collapse from "../components/Collapse";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { cx } from "../utils/classnames";
 import { useInfiniteNotes } from "../utils/use-infinite-notes";
-import { prefetchInfiniteNotes } from "../utils/prefetch-notes";
-
-export const getServerSideProps = async () => {
-  const trpcState = await prefetchInfiniteNotes();
-
-  return {
-    props: {
-      trpcState,
-    },
-  };
-};
+import { Loader } from "../components/Loader";
 
 const Home: NextPage = () => {
   const {
     notes,
+    isLoading,
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
   } = useInfiniteNotes();
+
+  console.log("loading", isLoading);
+  console.log("isFetchingNextPage", isFetchingNextPage);
 
   const [animateParent] = useAutoAnimate<HTMLDivElement>();
 
@@ -70,6 +64,7 @@ const Home: NextPage = () => {
                 />
               );
             })}
+            {isLoading && <Loader />}
             {hasNextPage && (
               <button
                 className={`btn btn-link text-accent ${cx({

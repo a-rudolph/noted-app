@@ -1,10 +1,5 @@
 import Head from "next/head";
 import type { NextPage } from "next";
-import { trpc } from "../utils/trpc";
-import { createSSGHelpers } from "@trpc/react/ssg";
-import { appRouter } from "../server/router";
-import superjson from "superjson";
-import { createContext } from "../server/router/context";
 import NoteForm from "../components/NoteForm";
 import Note from "../components/Note";
 import ProfileButton from "../components/ProfileButton";
@@ -13,26 +8,12 @@ import Collapse from "../components/Collapse";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { useInfiniteNotes } from "../utils/use-infinite-notes";
 import { cx } from "../utils/classnames";
-
-export const getServerSideProps = async () => {
-  const ssg = await createSSGHelpers({
-    router: appRouter,
-    ctx: createContext(),
-    transformer: superjson,
-  });
-
-  await ssg.prefetchQuery("note.getByUser");
-
-  return {
-    props: {
-      trpcState: ssg.dehydrate(),
-    },
-  };
-};
+import { Loader } from "../components/Loader";
 
 const MyNotes: NextPage = () => {
   const {
     notes,
+    isLoading,
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
@@ -73,6 +54,7 @@ const MyNotes: NextPage = () => {
                 />
               );
             })}
+            {isLoading && <Loader />}
             {hasNextPage && (
               <button
                 className={`btn btn-link text-accent ${cx({
