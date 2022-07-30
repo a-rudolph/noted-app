@@ -76,7 +76,7 @@ export const noteRouter = createRouter()
   .mutation("addNote", {
     input: z.object({
       title: z.string().min(4).max(40),
-      content: z.string().min(10).max(180),
+      content: z.string().max(180).default("no content"),
       isPrivate: z.boolean().optional(),
     }),
     async resolve({ ctx, input }) {
@@ -133,7 +133,7 @@ export const noteRouter = createRouter()
     input: z.object({
       id: z.string(),
       title: z.string().min(4).max(40),
-      content: z.string().min(10).max(180),
+      content: z.string().max(180).optional(),
       isPrivate: z.boolean().optional(),
     }),
     async resolve({ ctx, input }) {
@@ -165,7 +165,11 @@ export const noteRouter = createRouter()
         where: {
           id: input.id,
         },
-        data: { ...input },
+        data: {
+          title: input.title,
+          content: input.content,
+          isPrivate: input.isPrivate,
+        },
       });
     },
   });

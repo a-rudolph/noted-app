@@ -59,7 +59,7 @@ const NoteForm: React.FC<NoteFormProps> = ({
       const validate = (
         values: Partial<NoteValues>
       ): values is NoteValues => {
-        return Boolean(values.content && values.title);
+        return Boolean(values.title);
       };
 
       if (!validate(values)) {

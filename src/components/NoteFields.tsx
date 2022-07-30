@@ -4,7 +4,7 @@ import { FormField } from "./FormField";
 
 export type NoteValues = {
   title: string;
-  content: string;
+  content?: string;
   isPrivate: boolean;
 };
 
@@ -25,19 +25,6 @@ export const NoteFields: React.FC<{
           <div className="text-warning">
             <span className="text-sm">
               (new lines will be converted to spaces)
-            </span>
-          </div>
-        ),
-      };
-    }
-
-    if (content.length < 10 && isValidating) {
-      return {
-        status: "border-error",
-        extra: (
-          <div className="text-error">
-            <span className="text-sm">
-              Content must be at least 10 characters
             </span>
           </div>
         ),

@@ -1,6 +1,6 @@
-import type { CSSProperties } from "react";
+import { CSSProperties, useState } from "react";
 import moment from "moment";
-import { FaTrash, FaEdit } from "react-icons/fa";
+import { FaTrash, FaEdit, FaUndoAlt } from "react-icons/fa";
 import { useTypedSession } from "../utils/use-typed-session";
 import { trpc } from "../utils/trpc";
 import type { InferQueryOutput } from "../utils/trpc-helpers";
@@ -8,6 +8,7 @@ import NoteForm from "./NoteForm";
 import React from "react";
 import { Card } from "./Card";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { UNDO_MS } from "../utils/constants";
 
 type NoteType =
   InferQueryOutput<"note.getAll">["notes"][number];
@@ -38,9 +39,46 @@ const useNote = (note: NoteType) => {
 
 const Note: React.FC<{ note: NoteType }> = ({ note }) => {
   const { deleteNote, isMyNote } = useNote(note);
-  const [isEditing, setIsEditing] = React.useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const [animateParent] = useAutoAnimate<HTMLDivElement>();
+
+  const [pendingDeletion, setPendingDeletion] =
+    useState<NodeJS.Timeout>();
+
+  const handleDelete = () => {
+    const timeout = setTimeout(() => {
+      deleteNote();
+    }, UNDO_MS);
+
+    setPendingDeletion(timeout);
+  };
+
+  const undoDelete = () => {
+    setPendingDeletion((timeout) => {
+      clearTimeout(timeout);
+      return undefined;
+    });
+  };
+
+  if (pendingDeletion) {
+    return (
+      <div
+        ref={animateParent}
+        className="flex w-full justify-end mb-10"
+      >
+        <button className={`btn w-40`} onClick={undoDelete}>
+          <div className="w-full flex justify-between items-center">
+            <span className="text-sm">undo</span>
+            <FaUndoAlt />
+          </div>
+          <div className="w-full bg-base-100 rounded">
+            <div className="w-full scale-x-0 animate-undo h-2 bg-primary rounded" />
+          </div>
+        </button>
+      </div>
+    );
+  }
 
   const needsBreakWord = (content: string) => {
     return !content.includes(" ");
@@ -105,7 +143,7 @@ const Note: React.FC<{ note: NoteType }> = ({ note }) => {
                 </button>
                 <button
                   className="btn btn-link text-secondary"
-                  onClick={deleteNote}
+                  onClick={handleDelete}
                 >
                   <FaTrash />
                 </button>
