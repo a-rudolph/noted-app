@@ -97,19 +97,24 @@ const Note: React.FC<{
 
   if (pendingDeletion) {
     return (
-      <div
-        ref={animateParent}
-        className="flex w-full justify-end mb-10"
-      >
-        <button className={`btn w-40`} onClick={undoDelete}>
-          <div className="w-full flex justify-between items-center">
-            <span className="text-sm">undo</span>
-            <FaUndoAlt />
+      <div ref={animateParent} className="mb-10">
+        <div className="card shadow-lg flex-col relative overflow-hidden">
+          <div className="flex justify-between items-center bg-base-300 w-full pl-4">
+            <div>note deleted</div>
+            <button
+              className="btn btn-link text-secondary"
+              onClick={undoDelete}
+            >
+              <div className="w-full flex items-center gap-2">
+                <span className="text-sm">undo</span>
+                <FaUndoAlt />
+              </div>
+            </button>
           </div>
-          <div className="w-full bg-base-100 rounded">
-            <div className="w-full scale-x-0 animate-undo h-2 bg-primary rounded" />
+          <div className="w-full bg-base-100 rounded absolute bottom-0">
+            <div className="w-full scale-x-0 animate-undo h-1 bg-secondary rounded" />
           </div>
-        </button>
+        </div>
       </div>
     );
   }
