@@ -1,2 +1,2 @@
 // need to change in tailwind.config.js too
-export const UNDO_MS = 2400;
+export const UNDO_MS = 5000;

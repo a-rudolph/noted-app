@@ -10,7 +10,7 @@ module.exports = {
       },
       animation: {
         // also update time in utils/constants.js
-        undo: "undo 2.4s linear",
+        undo: "undo 5s linear",
       },
     },
   },
