@@ -19,9 +19,6 @@ const Home: NextPage = () => {
     isFetchingNextPage,
   } = useInfiniteNotes();
 
-  console.log("loading", isLoading);
-  console.log("isFetchingNextPage", isFetchingNextPage);
-
   const [animateParent] = useAutoAnimate<HTMLDivElement>();
 
   return (

@@ -16,6 +16,7 @@ import {
   Notification,
   notification,
 } from "../utils/notification";
+import { Button } from "./Button";
 
 type NoteType =
   InferQueryOutput<"note.getAll">["notes"][number];
@@ -188,18 +189,20 @@ const NoteTitle: React.FC<{
       </div>
       {isMyNote && (
         <div className="flex">
-          <button
-            className="btn btn-link text-accent"
+          <Button
+            link={true}
+            type="accent"
             onClick={onEdit}
           >
             <FaEdit />
-          </button>
-          <button
-            className="btn btn-link text-error"
+          </Button>
+          <Button
+            link={true}
+            type="error"
             onClick={onDelete}
           >
             <FaTrash />
-          </button>
+          </Button>
         </div>
       )}
     </div>
