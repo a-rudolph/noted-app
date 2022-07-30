@@ -35,6 +35,57 @@ const noteSelect = {
 };
 
 export const noteRouter = createRouter()
+  .query("infiniteNotes", {
+    input: z.object({
+      limit: z.number().min(1).max(100).nullish(),
+      myNotes: z.boolean().optional(),
+      cursor: z.string().nullish(),
+    }),
+    async resolve({ input, ctx }) {
+      const limit = input.limit ?? 5;
+      const { cursor } = input;
+
+      const user = await getUser(ctx);
+
+      if (input.myNotes && !user) {
+        throw new Error(
+          "You must be logged in to view your notes"
+        );
+      }
+
+      const notes = await ctx.prisma.note.findMany({
+        take: limit + 1, // get an extra item at the end which we'll use as next cursor
+        cursor: cursor ? { id: cursor } : undefined,
+        select: noteSelect,
+        where: input.myNotes
+          ? {
+              authorId: user?.id,
+            }
+          : {
+              OR: [
+                {
+                  isPrivate: false,
+                },
+                { authorId: user?.id },
+              ],
+            },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+      let nextCursor: typeof cursor | null = null;
+      if (notes.length > limit) {
+        const nextItem = notes.pop();
+        nextCursor = nextItem!.id;
+      }
+
+      return {
+        notes,
+        nextCursor,
+      };
+    },
+  })
   .query("getAll", {
     async resolve({ ctx }) {
       const notes = await ctx.prisma.note.findMany({

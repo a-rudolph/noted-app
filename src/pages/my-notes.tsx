@@ -11,6 +11,8 @@ import ProfileButton from "../components/ProfileButton";
 import Link from "next/link";
 import Collapse from "../components/Collapse";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { useInfiniteNotes } from "../utils/use-infinite-notes";
+import { cx } from "../utils/classnames";
 
 export const getServerSideProps = async () => {
   const ssg = await createSSGHelpers({
@@ -29,14 +31,12 @@ export const getServerSideProps = async () => {
 };
 
 const MyNotes: NextPage = () => {
-  const { data, isLoading } = trpc.useQuery(
-    ["note.getByUser"],
-    {
-      refetchOnWindowFocus: false,
-    }
-  );
-
-  const notes = data?.notes || [];
+  const {
+    notes,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useInfiniteNotes({ myNotes: true });
 
   const [animateParent] = useAutoAnimate<HTMLDivElement>();
 
@@ -64,21 +64,25 @@ const MyNotes: NextPage = () => {
             <NoteForm />
           </Collapse>
           <div className="py-6" ref={animateParent}>
-            {!data && isLoading && (
-              <div className="mb-6">...loading</div>
-            )}
-            {Boolean(!notes.length) && !isLoading && (
-              <div className="mb-6">no notes!</div>
-            )}
             {notes.map((note) => {
               return (
                 <Note
-                  queryKey="note.getByUser"
+                  queryKey="note.infiniteNotes"
                   key={note.id}
                   note={note}
                 />
               );
             })}
+            {hasNextPage && (
+              <button
+                className={`btn btn-link text-accent ${cx({
+                  loading: isFetchingNextPage,
+                })}`}
+                onClick={() => fetchNextPage()}
+              >
+                Load more
+              </button>
+            )}
           </div>
         </div>
       </div>

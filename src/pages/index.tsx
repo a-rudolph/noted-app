@@ -1,42 +1,32 @@
 import Head from "next/head";
 import type { NextPage } from "next";
-import { trpc } from "../utils/trpc";
-import { createSSGHelpers } from "@trpc/react/ssg";
-import { appRouter } from "../server/router";
-import superjson from "superjson";
-import { createContext } from "../server/router/context";
 import NoteForm from "../components/NoteForm";
 import Note from "../components/Note";
 import Link from "next/link";
 import ProfileButton from "../components/ProfileButton";
 import Collapse from "../components/Collapse";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { cx } from "../utils/classnames";
+import { useInfiniteNotes } from "../utils/use-infinite-notes";
+import { prefetchInfiniteNotes } from "../utils/prefetch-notes";
 
 export const getServerSideProps = async () => {
-  const ssg = await createSSGHelpers({
-    router: appRouter,
-    ctx: createContext(),
-    transformer: superjson,
-  });
-
-  await ssg.prefetchQuery("note.getAll");
+  const trpcState = await prefetchInfiniteNotes();
 
   return {
     props: {
-      trpcState: ssg.dehydrate(),
+      trpcState,
     },
   };
 };
 
 const Home: NextPage = () => {
-  const { data, isLoading } = trpc.useQuery(
-    ["note.getAll"],
-    {
-      refetchOnWindowFocus: false,
-    }
-  );
-
-  const notes = data?.notes || [];
+  const {
+    notes,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useInfiniteNotes();
 
   const [animateParent] = useAutoAnimate<HTMLDivElement>();
 
@@ -71,21 +61,25 @@ const Home: NextPage = () => {
             <NoteForm />
           </Collapse>
           <div className="py-6" ref={animateParent}>
-            {!data && isLoading && (
-              <div className="mb-6">...loading</div>
-            )}
-            {Boolean(!notes.length) && !isLoading && (
-              <div className="mb-6">no notes!</div>
-            )}
             {notes.map((note) => {
               return (
                 <Note
-                  queryKey="note.getAll"
+                  queryKey="note.infiniteNotes"
                   key={note.id}
                   note={note}
                 />
               );
             })}
+            {hasNextPage && (
+              <button
+                className={`btn btn-link text-accent ${cx({
+                  loading: isFetchingNextPage,
+                })}`}
+                onClick={() => fetchNextPage()}
+              >
+                Load more
+              </button>
+            )}
           </div>
         </div>
       </div>

@@ -34,8 +34,7 @@ const NoteForm: React.FC<NoteFormProps> = ({
 
   const mutateOptions = {
     onSuccess: () => {
-      utils.invalidateQueries(["note.getAll"]);
-      utils.invalidateQueries(["note.getByUser"]);
+      utils.invalidateQueries(["note.infiniteNotes"]);
       resetForm();
       onSuccess?.();
     },
