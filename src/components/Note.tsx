@@ -104,7 +104,7 @@ const Note: React.FC<{
           <div className="flex justify-between items-center bg-base-300 w-full pl-4">
             <div>note deleted</div>
             <button
-              className="btn btn-link text-secondary"
+              className="btn btn-link text-error"
               onClick={undoDelete}
             >
               <div className="w-full flex items-center gap-2">
@@ -114,7 +114,7 @@ const Note: React.FC<{
             </button>
           </div>
           <div className="w-full bg-base-100 rounded absolute bottom-0">
-            <div className="w-full scale-x-0 animate-undo h-1 bg-secondary rounded" />
+            <div className="w-full origin-right scale-x-0 animate-undo h-1 bg-error rounded" />
           </div>
         </div>
       </div>
@@ -158,13 +158,14 @@ const Note: React.FC<{
     <div ref={animateParent} className="note mb-10">
       <div className="flex justify-between m-2">
         <div className="text-gray-500 whitespace-nowrap">
-          {note.author?.name}
+          {note.author?.name || "anonymous"}
         </div>
         <div className="text-gray-500 whitespace-nowrap">
           {moment(note.createdAt).format("lll")}
         </div>
       </div>
       <Card
+        leftFlair={note.isPrivate ? "secondary" : "primary"}
         title={
           <div className="flex w-full justify-between items-baseline">
             <div className="flex-1">
@@ -183,7 +184,7 @@ const Note: React.FC<{
                   <FaEdit />
                 </button>
                 <button
-                  className="btn btn-link text-secondary"
+                  className="btn btn-link text-error"
                   onClick={handleDelete}
                 >
                   <FaTrash />

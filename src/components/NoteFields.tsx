@@ -46,7 +46,7 @@ export const NoteFields: React.FC<{
     }
 
     return {};
-  }, [content, isValidating]);
+  }, [content]);
 
   return (
     <div>
@@ -79,7 +79,7 @@ export const NoteFields: React.FC<{
           onChange={(e) =>
             editForm({ content: e.target.value })
           }
-          className={`input input-bordered ${contentProps.status} h-[160px] resize-none`}
+          className={`input input-bordered ${contentProps.status} h-20 resize-none`}
           placeholder="Enter your content"
           maxLength={180}
         />

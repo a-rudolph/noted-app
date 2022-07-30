@@ -9,7 +9,8 @@ module.exports = {
         },
       },
       animation: {
-        undo: "undo 2s linear",
+        // also update time in utils/constants.js
+        undo: "undo 2.4s linear",
       },
     },
   },

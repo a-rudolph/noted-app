@@ -1,9 +1,6 @@
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { useState } from "react";
-import {
-  AiOutlineClose,
-  AiOutlinePlus,
-} from "react-icons/ai";
+import { OpenClose } from "./OpenClose";
 import Tooltip from "./Tooltip";
 
 const Collapse: React.FC<{
@@ -18,20 +15,12 @@ const Collapse: React.FC<{
     <div ref={animateParent}>
       <div className="flex justify-end">
         <Tooltip title="add a note" closed={!isOpen}>
-          <button
-            className="btn btn-circle btn-primary"
+          <OpenClose
+            isOpen={isOpen}
             onClick={() => {
               setIsOpen((isOpen) => !isOpen);
             }}
-          >
-            <span className="text-xl">
-              {isOpen ? (
-                <AiOutlineClose />
-              ) : (
-                <AiOutlinePlus />
-              )}
-            </span>
-          </button>
+          ></OpenClose>
         </Tooltip>
       </div>
       {isOpen && <div>{children}</div>}

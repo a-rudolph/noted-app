@@ -162,17 +162,17 @@ const AddNoteButton: React.FC<{
   }
 
   return (
-    <div className={`flex items-center w-40`}>
+    <div className={`flex items-center`}>
       <button
-        className={`btn ${btnTheme} rounded-r-none`}
+        className={`btn ${btnTheme} rounded-r-none w-40`}
         disabled={isDisabled}
         onClick={onClick}
       >
         {isPrivate && (
-          <div className="text-center">Save Note</div>
+          <div className="text-center">Save Privately</div>
         )}
         {isPrivate || (
-          <div className="text-center">Post Note</div>
+          <div className="text-center">Post Publicly</div>
         )}
       </button>
       {canNotePrivately && (
