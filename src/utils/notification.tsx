@@ -1,12 +1,40 @@
 import ReactDOM from "react-dom";
 import { AiOutlineClose } from "react-icons/ai";
-import { FaExclamation } from "react-icons/fa";
+import { FaExclamation, FaUndoAlt } from "react-icons/fa";
 
-const Notification: React.FC<{
+export const Notification: React.FC<{
+  message: string;
+  onClose: VoidFunction;
+  onUndo: VoidFunction;
+}> = ({ message, onClose, onUndo }) => {
+  return ReactDOM.createPortal(
+    <div className="card pointer-events-auto shadow-lg flex-col w-60 relative rounded overflow-hidden">
+      <div className="flex justify-between items-center bg-slate-700 w-full pl-4">
+        <div>{message}</div>
+        <button
+          className="btn btn-link text-error"
+          onClick={onUndo}
+        >
+          <div className="w-full flex items-center gap-2">
+            <span className="text-sm">undo</span>
+            <FaUndoAlt />
+          </div>
+        </button>
+      </div>
+      <div className="w-full bg-base-100 rounded absolute bottom-0">
+        <div className="w-full origin-right scale-x-0 animate-undo h-1 bg-error rounded" />
+      </div>
+    </div>,
+    document.getElementById("notification-layer") ||
+      document.body
+  );
+};
+
+const Error: React.FC<{
   message: string;
   onClose: VoidFunction;
 }> = ({ message, onClose }) => {
-  return (
+  return ReactDOM.createPortal(
     <div className="alert alert-error pointer-events-auto z-50 w-[360px] rounded-sm opacity-80">
       <div className="flex gap-2 items-start ">
         <span className="p-2">
@@ -22,7 +50,9 @@ const Notification: React.FC<{
           <AiOutlineClose />
         </span>
       </button>
-    </div>
+    </div>,
+    document.getElementById("notification-layer") ||
+      document.body
   );
 };
 
@@ -44,7 +74,7 @@ export const notification = (message: string) => {
   };
 
   ReactDOM.render(
-    <Notification onClose={onClose} message={message} />,
+    <Error onClose={onClose} message={message} />,
     notification
   );
 

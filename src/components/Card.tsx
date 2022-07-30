@@ -1,3 +1,4 @@
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { cx } from "../utils/classnames";
 
 export const Card: React.FC<{
@@ -11,11 +12,13 @@ export const Card: React.FC<{
     "border-l-secondary": leftFlair === "secondary",
   });
 
+  const [animateParent] = useAutoAnimate<HTMLDivElement>();
+
   return (
     <div
       className={`card card-compact prose bg-base-300 ${className}`}
     >
-      <div className="card-body">
+      <div ref={animateParent} className="card-body">
         {title && (
           <>
             <div className="card-title text-2xl">

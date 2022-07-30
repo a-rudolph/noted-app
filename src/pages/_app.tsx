@@ -16,7 +16,7 @@ const MyApp: AppType = ({
       <Component {...pageProps} />
       <ReactQueryDevtools />
       <div
-        className="h-screen w-screen fixed pointer-events-none top-0 left-0 p-4 pr-8 flex flex-col items-end gap-2"
+        className="h-screen w-screen fixed pointer-events-none top-0 left-0 p-4 pr-8 flex flex-col items-end justify-end gap-2"
         id="notification-layer"
       ></div>
     </SessionProvider>

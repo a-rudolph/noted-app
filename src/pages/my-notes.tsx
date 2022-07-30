@@ -10,6 +10,7 @@ import Note from "../components/Note";
 import ProfileButton from "../components/ProfileButton";
 import Link from "next/link";
 import Collapse from "../components/Collapse";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 export const getServerSideProps = async () => {
   const ssg = await createSSGHelpers({
@@ -37,6 +38,8 @@ const MyNotes: NextPage = () => {
 
   const notes = data?.notes || [];
 
+  const [animateParent] = useAutoAnimate<HTMLDivElement>();
+
   return (
     <>
       <Head>
@@ -60,7 +63,7 @@ const MyNotes: NextPage = () => {
           <Collapse defaultOpen={false}>
             <NoteForm />
           </Collapse>
-          <div className="py-6">
+          <div className="py-6" ref={animateParent}>
             {!data && isLoading && (
               <div className="mb-6">...loading</div>
             )}

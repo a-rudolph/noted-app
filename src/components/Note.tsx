@@ -12,7 +12,10 @@ import React from "react";
 import { Card } from "./Card";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { UNDO_MS } from "../utils/constants";
-import { notification } from "../utils/notification";
+import {
+  Notification,
+  notification,
+} from "../utils/notification";
 
 type NoteType =
   InferQueryOutput<"note.getAll">["notes"][number];
@@ -56,25 +59,38 @@ const useNote = (note: NoteType, queryKey: TQuery) => {
     },
   });
 
+  return {
+    deleteNote: () => {
+      mutate({ id: note.id });
+    },
+  };
+};
+
+const useIsMyNote = (note: NoteType) => {
   const { data } = useTypedSession();
 
   // if we don't check that there is also a user, then unauthed with === unauthoredNote
   const isMyNote =
     data?.user && data?.user?.id === note.author?.id;
 
-  return {
-    deleteNote: () => {
-      mutate({ id: note.id });
-    },
-    isMyNote,
-  };
+  return isMyNote;
+};
+
+const needsBreakWord = (content: string) => {
+  return !content.includes(" ");
+};
+
+const breakWordStyle = (content: string): CSSProperties => {
+  return needsBreakWord(content)
+    ? { wordBreak: "break-word" }
+    : {};
 };
 
 const Note: React.FC<{
   note: NoteType;
   queryKey: TQuery;
 }> = ({ note, queryKey }) => {
-  const { deleteNote, isMyNote } = useNote(note, queryKey);
+  const { deleteNote } = useNote(note, queryKey);
   const [isEditing, setIsEditing] = useState(false);
 
   const [animateParent] = useAutoAnimate<HTMLDivElement>();
@@ -99,58 +115,11 @@ const Note: React.FC<{
 
   if (pendingDeletion) {
     return (
-      <div ref={animateParent} className="mb-10">
-        <div className="card shadow-lg flex-col relative overflow-hidden">
-          <div className="flex justify-between items-center bg-base-300 w-full pl-4">
-            <div>note deleted</div>
-            <button
-              className="btn btn-link text-error"
-              onClick={undoDelete}
-            >
-              <div className="w-full flex items-center gap-2">
-                <span className="text-sm">undo</span>
-                <FaUndoAlt />
-              </div>
-            </button>
-          </div>
-          <div className="w-full bg-base-100 rounded absolute bottom-0">
-            <div className="w-full origin-right scale-x-0 animate-undo h-1 bg-error rounded" />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const needsBreakWord = (content: string) => {
-    return !content.includes(" ");
-  };
-
-  const breakWordStyle = (
-    content: string
-  ): CSSProperties => {
-    return needsBreakWord(content)
-      ? { wordBreak: "break-word" }
-      : {};
-  };
-
-  if (isEditing) {
-    return (
-      <div ref={animateParent} className="note mb-10">
-        <Card>
-          <NoteForm
-            initialValues={{
-              title: note.title,
-              content: note.content,
-              isPrivate: note.isPrivate || false,
-            }}
-            noteId={note.id}
-            onCancel={() => setIsEditing(false)}
-            onSuccess={() => {
-              setIsEditing(false);
-            }}
-          />
-        </Card>
-      </div>
+      <Notification
+        message="note deleted"
+        onUndo={undoDelete}
+        onClose={() => {}}
+      />
     );
   }
 
@@ -167,40 +136,72 @@ const Note: React.FC<{
       <Card
         leftFlair={note.isPrivate ? "secondary" : "primary"}
         title={
-          <div className="flex w-full justify-between items-baseline">
-            <div className="flex-1">
-              <span style={breakWordStyle(note.title)}>
-                {note.title}
-              </span>
-            </div>
-            {isMyNote && (
-              <div className="flex">
-                <button
-                  className="btn btn-link text-accent"
-                  onClick={() => {
-                    setIsEditing(true);
-                  }}
-                >
-                  <FaEdit />
-                </button>
-                <button
-                  className="btn btn-link text-error"
-                  onClick={handleDelete}
-                >
-                  <FaTrash />
-                </button>
-              </div>
-            )}
-          </div>
+          !isEditing && (
+            <NoteTitle
+              note={note}
+              onEdit={() => setIsEditing(true)}
+              onDelete={handleDelete}
+            />
+          )
         }
       >
-        <div
-          className="py-2"
-          style={breakWordStyle(note.content)}
-        >
-          {note.content}
-        </div>
+        {isEditing || (
+          <div
+            className="py-2"
+            style={breakWordStyle(note.content)}
+          >
+            {note.content}
+          </div>
+        )}
+        {isEditing && (
+          <NoteForm
+            initialValues={{
+              title: note.title,
+              content: note.content,
+              isPrivate: note.isPrivate || false,
+            }}
+            noteId={note.id}
+            onCancel={() => setIsEditing(false)}
+            onSuccess={() => {
+              setIsEditing(false);
+            }}
+          />
+        )}
       </Card>
+    </div>
+  );
+};
+
+const NoteTitle: React.FC<{
+  note: NoteType;
+  onDelete: VoidFunction;
+  onEdit: VoidFunction;
+}> = ({ note, onEdit, onDelete }) => {
+  const isMyNote = useIsMyNote(note);
+
+  return (
+    <div className="flex w-full justify-between items-baseline">
+      <div className="flex-1">
+        <span style={breakWordStyle(note.title)}>
+          {note.title}
+        </span>
+      </div>
+      {isMyNote && (
+        <div className="flex">
+          <button
+            className="btn btn-link text-accent"
+            onClick={onEdit}
+          >
+            <FaEdit />
+          </button>
+          <button
+            className="btn btn-link text-error"
+            onClick={onDelete}
+          >
+            <FaTrash />
+          </button>
+        </div>
+      )}
     </div>
   );
 };
