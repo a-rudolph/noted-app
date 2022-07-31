@@ -9,3 +9,10 @@ export const appRouter = createRouter()
 
 // export type definition of API
 export type AppRouter = typeof appRouter;
+
+export type InfiniteNoteOptions = {
+  limit: number;
+
+  // only my notes, false will still include mine
+  myNotes?: boolean;
+};

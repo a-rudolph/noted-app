@@ -17,46 +17,94 @@ import {
   notification,
 } from "../utils/notification";
 import { Button } from "./Button";
+import { InfiniteNoteOptions } from "../server/router";
 
 type NoteType =
   InferQueryOutput<"note.getAll">["notes"][number];
 
-const useNote = (note: NoteType, queryKey: TQuery) => {
+const useNote = (
+  note: NoteType,
+  queryOptions: InfiniteNoteOptions
+) => {
   const utils = trpc.useContext();
 
   const { mutate } = trpc.useMutation("note.deleteNote", {
     onMutate: async ({ id }) => {
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-      await utils.cancelQuery([queryKey]);
+      await utils.cancelQuery([
+        "note.infiniteNotes",
+        queryOptions,
+      ]);
 
       // Snapshot the previous value
-      const previousNotes = utils.getQueryData([queryKey]);
+      const previousNotes = utils.getInfiniteQueryData([
+        "note.infiniteNotes",
+        queryOptions,
+      ]);
 
       // Optimistically update to the new value
-      utils.setQueryData([queryKey], (prev) => {
-        const newNotes = prev?.notes.filter(
-          (n) => n.id !== id
-        );
+      utils.setInfiniteQueryData(
+        ["note.infiniteNotes", queryOptions],
+        (prev) => {
+          const prevPages = prev?.pages || [];
 
-        return {
-          notes: newNotes || [],
-        };
-      });
+          const prevPage = prevPages.find((page) => {
+            return page.notes.find(
+              (note) => note.id === id
+            );
+          });
+
+          if (!prevPage) {
+            return (
+              prev || {
+                pages: [],
+                pageParams: [],
+              }
+            );
+          }
+
+          const newNotes = prevPage.notes.filter(
+            (n) => n.id !== id
+          );
+
+          const nextPages = prevPages.map((page) => {
+            if (page.nextCursor === prevPage.nextCursor) {
+              return {
+                notes: newNotes,
+                nextCursor: prevPage.nextCursor,
+              };
+            }
+
+            return page;
+          });
+
+          return {
+            pages: nextPages,
+            pageParams: prev?.pageParams || [],
+          };
+        }
+      );
 
       // Return a context object with the snapshotted value
       return { previousNotes };
     },
     // If the mutation fails, use the context returned from onMutate to roll back
-    onError: (err, newTodo, context) => {
+    onError: (err, input, context) => {
       notification(err.message);
-      utils.setQueryData(
-        [queryKey],
-        context?.previousNotes || { notes: [] }
+      utils.setInfiniteQueryData(
+        ["note.infiniteNotes", queryOptions],
+        context?.previousNotes || {
+          pages: [],
+          pageParams: [],
+        }
       );
     },
     // Always refetch after error or success:
     onSettled: () => {
-      utils.invalidateQueries([queryKey]);
+      utils.invalidateQueries([
+        "note.infiniteNotes",
+        queryOptions,
+      ]);
     },
   });
 
@@ -93,9 +141,8 @@ const Note: React.FC<{
     limit: number;
     myNotes: boolean;
   };
-  queryKey: TQuery;
-}> = ({ note, queryKey, queryOptions }) => {
-  const { deleteNote } = useNote(note, queryKey);
+}> = ({ note, queryOptions }) => {
+  const { deleteNote } = useNote(note, queryOptions);
   const [isEditing, setIsEditing] = useState(false);
 
   const [animateParent] = useAutoAnimate<HTMLDivElement>();

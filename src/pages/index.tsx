@@ -9,12 +9,16 @@ import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { cx } from "../utils/classnames";
 import { useInfiniteNotes } from "../utils/use-infinite-notes";
 import { Loader } from "../components/Loader";
+import { useMemo } from "react";
 
 const Home: NextPage = () => {
-  const queryOptions = {
-    limit: 10,
-    myNotes: false,
-  };
+  const queryOptions = useMemo(
+    () => ({
+      limit: 10,
+      myNotes: false,
+    }),
+    []
+  );
 
   const {
     notes,
@@ -68,7 +72,6 @@ const Home: NextPage = () => {
               return (
                 <Note
                   queryOptions={queryOptions}
-                  queryKey="note.infiniteNotes"
                   key={note.id}
                   note={note}
                 />
