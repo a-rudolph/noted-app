@@ -8,6 +8,7 @@ import { useAuthed } from "../utils/use-authed";
 import { NoteFields } from "./NoteFields";
 import type { NoteValues } from "./NoteFields";
 import type { TQuery } from "../utils/trpc-helpers";
+import type { InfiniteData } from "react-query";
 
 type NoteFormProps = FormProps<NoteValues> & {
   noteId?: string;
@@ -16,6 +17,27 @@ type NoteFormProps = FormProps<NoteValues> & {
     limit: number;
     myNotes: boolean;
   };
+};
+
+type InfiniteNoteData = InfiniteData<{
+  notes: {
+    isPrivate: boolean | null;
+    author: {
+      id: string;
+      name: string | null;
+      image: string | null;
+    } | null;
+    id: string;
+    createdAt: Date;
+    title: string;
+    content: string;
+  }[];
+  nextCursor: string | null;
+}>;
+
+const fallbackData: InfiniteNoteData = {
+  pages: [],
+  pageParams: [],
 };
 
 const useCreateNote = ({
@@ -37,34 +59,27 @@ const useCreateNote = ({
     queryOptions,
   ]);
 
+  const optimisticCreateNotQuiteReady = true;
+
   const { mutate, isLoading } = trpc.useMutation(
     ["note.addNote"],
     {
-      onMutate: async (input) => {
+      onSuccess({ note, author }, input, context) {
         onSuccess();
 
-        // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-        await utils.cancelQuery([key, queryOptions]);
-
-        // Snapshot the previous value
-        const previousNotes = utils.getInfiniteQueryData([
-          key,
-          queryOptions,
-        ]);
+        if (optimisticCreateNotQuiteReady) return;
 
         const setter = (prev: typeof previousNotes) => {
           const prevPages = prev?.pages || [];
 
           const newNote: typeof prevPages[number]["notes"][number] =
             {
-              id: "tempid".concat(
-                new Date().getUTCMilliseconds().toString()
-              ),
-              author: null,
-              isPrivate: input.isPrivate || false,
-              content: input.content || "no content",
-              title: input.title,
-              createdAt: new Date(),
+              id: note.id,
+              author,
+              isPrivate: note.isPrivate || false,
+              content: note.content || "no content",
+              title: note.title,
+              createdAt: note.createdAt,
             };
 
           const [
@@ -95,11 +110,25 @@ const useCreateNote = ({
           [key, queryOptions],
           setter
         );
+      },
+      onMutate: async (input) => {
+        if (optimisticCreateNotQuiteReady) return;
+
+        // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+        await utils.cancelQuery([key, queryOptions]);
+
+        // Snapshot the previous value
+        const previousNotes = utils.getInfiniteQueryData([
+          key,
+          queryOptions,
+        ]);
 
         // Return a context object with the snapshotted value
         return { previousNotes };
       },
-      onError: (err, values, context) => {
+      onError: (err, values, context: any) => {
+        if (optimisticCreateNotQuiteReady) return;
+
         utils.setInfiniteQueryData(
           [key, queryOptions],
           context?.previousNotes || {

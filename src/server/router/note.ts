@@ -144,9 +144,18 @@ export const noteRouter = createRouter()
         );
       }
 
-      return await ctx.prisma.note.create({
+      const note = await ctx.prisma.note.create({
         data: { ...input, authorId: user?.id },
       });
+
+      return {
+        note,
+        author: user && {
+          id: user.id,
+          name: user.name,
+          image: user.image,
+        },
+      };
     },
   })
   .mutation("deleteNote", {
