@@ -11,13 +11,18 @@ import { cx } from "../utils/classnames";
 import { Loader } from "../components/Loader";
 
 const MyNotes: NextPage = () => {
+  const queryOptions = {
+    limit: 10,
+    myNotes: true,
+  };
+
   const {
     notes,
     isLoading,
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
-  } = useInfiniteNotes({ myNotes: true });
+  } = useInfiniteNotes(queryOptions);
 
   const [animateParent] = useAutoAnimate<HTMLDivElement>();
 
@@ -44,6 +49,7 @@ const MyNotes: NextPage = () => {
           <NoteButton>
             {({ setIsOpen }) => (
               <NoteForm
+                queryOptions={queryOptions}
                 onSuccess={() => {
                   setIsOpen(false);
                 }}
@@ -54,6 +60,7 @@ const MyNotes: NextPage = () => {
             {notes.map((note) => {
               return (
                 <Note
+                  queryOptions={queryOptions}
                   queryKey="note.infiniteNotes"
                   key={note.id}
                   note={note}

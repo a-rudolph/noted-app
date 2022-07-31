@@ -1,6 +1,6 @@
 import { CSSProperties, useState } from "react";
 import moment from "moment";
-import { FaTrash, FaEdit, FaUndoAlt } from "react-icons/fa";
+import { FaTrash, FaEdit } from "react-icons/fa";
 import { useTypedSession } from "../utils/use-typed-session";
 import { trpc } from "../utils/trpc";
 import type {
@@ -89,8 +89,12 @@ const breakWordStyle = (content: string): CSSProperties => {
 
 const Note: React.FC<{
   note: NoteType;
+  queryOptions: {
+    limit: number;
+    myNotes: boolean;
+  };
   queryKey: TQuery;
-}> = ({ note, queryKey }) => {
+}> = ({ note, queryKey, queryOptions }) => {
   const { deleteNote } = useNote(note, queryKey);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -157,6 +161,7 @@ const Note: React.FC<{
         )}
         {isEditing && (
           <NoteForm
+            queryOptions={queryOptions}
             initialValues={{
               title: note.title,
               content: note.content,

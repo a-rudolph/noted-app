@@ -24,6 +24,7 @@ const useOnScrollToBottom = (onScrolled: VoidFunction) => {
 
 export const useInfiniteNotes = (options?: {
   myNotes?: boolean;
+  limit?: number;
 }) => {
   const {
     data,
@@ -35,7 +36,7 @@ export const useInfiniteNotes = (options?: {
     [
       "note.infiniteNotes",
       {
-        limit: 10,
+        limit: options?.limit || 10,
         myNotes: options?.myNotes,
       },
     ],
