@@ -22,7 +22,7 @@ export const Notification: React.FC<{
         </button>
       </div>
       <div className="w-full bg-base-100 rounded absolute bottom-0">
-        <div className="w-full origin-right scale-x-0 animate-undo h-1 bg-error rounded" />
+        <div className="w-full origin-left scale-x-0 animate-undo h-1 bg-error rounded" />
       </div>
     </div>,
     document.getElementById("notification-layer") ||
@@ -56,7 +56,7 @@ const Error: React.FC<{
   );
 };
 
-export const notification = (message: string) => {
+const notification = (message: string) => {
   const root = document.getElementById(
     "notification-layer"
   );

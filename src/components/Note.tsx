@@ -12,10 +12,7 @@ import React from "react";
 import { Card } from "./Card";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { UNDO_MS } from "../utils/constants";
-import {
-  Notification,
-  notification,
-} from "../utils/notification";
+import { Notification } from "../utils/notification";
 import { Button } from "./Button";
 import { InfiniteNoteOptions } from "../server/router";
 
@@ -90,7 +87,6 @@ const useNote = (
     },
     // If the mutation fails, use the context returned from onMutate to roll back
     onError: (err, input, context) => {
-      notification(err.message);
       utils.setInfiniteQueryData(
         ["note.infiniteNotes", queryOptions],
         context?.previousNotes || {

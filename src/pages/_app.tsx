@@ -5,7 +5,11 @@ import superjson from "superjson";
 import { SessionProvider } from "next-auth/react";
 import "../styles/globals.css";
 import { ReactQueryDevtools } from "react-query/devtools";
-import { notification } from "../utils/notification";
+// import { notification } from "../utils/notification";
+
+const notification = (message: string) => {
+  console.log(message);
+};
 
 const MyApp: AppType = ({
   Component,
