@@ -3,48 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "tsc": "tsc --noEmit",
-    "postinstall": "prisma generate"
+    "dev:web": "pnpm --filter noted-app-web dev"
   },
-  "prisma": {
-    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
-  },
-  "dependencies": {
-    "@formkit/auto-animate": "^1.0.0-beta.1",
-    "@next-auth/prisma-adapter": "^1.0.3",
-    "@prisma/client": "^4.0.0",
-    "@trpc/client": "^9.25.3",
-    "@trpc/next": "^9.25.3",
-    "@trpc/react": "^9.25.3",
-    "@trpc/server": "^9.25.3",
-    "daisyui": "^2.18.0",
-    "moment": "^2.29.3",
-    "next": "12.2.0",
-    "next-auth": "^4.7.0",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "react-icons": "^4.4.0",
-    "react-query": "^3.39.1",
-    "superjson": "^1.9.1",
-    "zod": "^3.17.3"
-  },
+  "workspaces": [
+    "packages/*"
+  ],
   "devDependencies": {
-    "@tailwindcss/typography": "^0.5.2",
-    "@types/node": "18.0.0",
-    "@types/react": "18.0.14",
-    "@types/react-dom": "18.0.5",
-    "autoprefixer": "^10.4.7",
-    "eslint": "8.18.0",
-    "eslint-config-next": "12.1.6",
-    "postcss": "^8.4.14",
-    "prettier": "2.7.1",
-    "prisma": "^4.0.0",
-    "tailwindcss": "^3.1.4",
-    "ts-node": "^10.8.1",
-    "typescript": "4.7.4"
+    "noted-app-web": "workspace:*"
   }
 }

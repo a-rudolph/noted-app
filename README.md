@@ -7,6 +7,8 @@ A simple fullstack app to brush up on databases and learn some new technologies.
 First, run the development server:
 
 ```bash
+pnpm run start
+# or
 npm run start
 ```
 
